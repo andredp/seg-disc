@@ -1,0 +1,10 @@
+MY_CLASSPATH=.:./config:./math:./receivers:$(CLASSPATH)
+JARNAME=segdisc-analyzer
+RM=rm
+
+all:
+	(cd src/com/dsp; javac -encoding UTF-8 -cp $(MY_CLASSPATH) `find . -name \*.java`)
+	(cd src; jar cf ../$(JARNAME).jar `find . -name \*.class -o -name \*.java`)
+
+clean:
+	$(RM) $(JARNAME).jar `find . -name \*.class`

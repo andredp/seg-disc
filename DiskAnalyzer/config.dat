@@ -1,0 +1,74 @@
+################################################################
+#                      Configuration File                      #
+################################################################
+
+
+## User Settings (Edit as needed)
+####################
+
+## *** Network settings
+
+PC_IP    = 192.168.250.10
+PLC_IP   = 192.168.250.1
+PLC_PORT = 9600
+
+## *** Data Settings
+
+# Segments Data
+SEG_DATA_AREA  = D
+FRONT_SEG_DATA = [1000, 5999]
+BACK_SEG_DATA  = [6000, 10999]
+	# Segment data decimal cases
+SEG_DATA_DEC_CASES = 2
+
+# Run signal bit
+RUN_BIT_AREA   = D
+RUN_BIT_ADDR   = 300
+RUN_BIT_OFFSET = 0
+RUN_CHECK_INTERVAL = 3000
+
+# Work Tolerance
+WORK_TOL_AREA = D
+WORK_TOL_ADDR = 301
+WORK_TOL_DEC_CASES = 1
+
+## Internal Settings (WARNING: Edit only if you ARE sure of what you're doing!)
+####################
+
+# *** Network Settings
+
+PROTOCOL = TCP
+
+PLC_MAXBADPACKETS = 3
+PLC_READCHUNK     = 500
+PLC_WRITECHUNK    = 500
+
+UDP_TIMEOUT = 20
+UDP_RETRIES = 3
+
+# *** Analysis Settings
+
+SEG_ERROR_THRESHOLD = 5
+# SEG_WORK_TOLERANCE  = 0.05 (deprecated - this is get from the PLC)
+
+VALID_READ_RANGE    = [0.0, 2.0]
+
+
+# Notes
+####################
+
+# * UDP_TIMEOUT: integer (seconds)
+#	- Tempo maximo de espera por resposta a um pedido UDP
+
+# * UDP_RETRIES: integer
+#	- Numero de tentativas a fazer apos o tempo do maximo de espera por resposta (TIMEOUT) 
+#	ter sido excedido 
+
+# * SEG_ERROR_THRESHOLD: integer
+#   Numero de valores errados consecutivos para considerar intervalo entre segmentos
+
+# * SEG_WORK_TOLERANCE: double
+#	Coeficiente de tolerancia de trabalho maximo de um segmento (coef * num_segmentos)
+
+# * VALID_READ_RANGE: [double, double] 
+#	Intervalo de valores correctos enviados pelo sensor
