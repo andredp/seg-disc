@@ -16,6 +16,7 @@ public class FINS_TCPClient extends FINSClient {
   
   @Override
   public void connect() throws Exception {
+    
     _client.send(FINSFrames.createTCPConnectFrame(0));
     byte[] tcp_frame = new byte[24];
     _client.receive(tcp_frame);
@@ -31,7 +32,7 @@ public class FINS_TCPClient extends FINSClient {
     
     Log.info("TCPFinsClient", "Handshake successfull");
     Log.info("TCPFinsClient", "Client Node: " + clientNode);
-    Log.info("TCPFinsClient", "Server Node: " + serverNode);
+    Log.info("TCPFinsClient", "Server Node: " + serverNode); // ola
   }
 
   
