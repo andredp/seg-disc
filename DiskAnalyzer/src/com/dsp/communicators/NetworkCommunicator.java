@@ -10,6 +10,9 @@ import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.fins.FINSClient;
 import com.dsp.communicators.fins.FINSFrames;
 import com.dsp.communicators.fins.FINS_TCPClient;
+import com.dsp.libs.Utils;
+import com.dsp.renderers.DiscRenderer;
+import com.dsp.renderers.NBConsoleRenderer;
 import com.esotericsoftware.minlog.Log;
 
 public class NetworkCommunicator implements Communicator {
@@ -111,7 +114,7 @@ public class NetworkCommunicator implements Communicator {
     try {
       _client.testOrConnect();
       int word = _client.readWordFromPLC(WORK_TOL_AREA, WORK_TOL_ADDR);
-      double tolerance = decimalIntToDouble(word, WORK_TOL_DEC_CASES);
+      double tolerance = Utils.decimalIntToDouble(word, WORK_TOL_DEC_CASES);
       Log.info("Tolerance: " + tolerance);
       return tolerance / 100.0;
     } catch (Exception e) {
@@ -120,38 +123,6 @@ public class NetworkCommunicator implements Communicator {
     }
   }
 
-  
-  private void printErrorSegments(List<Segment> seg_info, String area, int address) throws Exception {
-    int errors = 0;
-    for (Segment s : seg_info) {
-      if (s.isBroken()) {
-        if (++errors > MAX_ERRORS_DISP) {
-          Log.warn("Too many errors!");
-          return;
-        }
-
-        byte[] index    = FINSFrames.decToHexBytes(s.getIndex() + 1);
-        byte[] pos      = FINSFrames.decToHexBytes(s.midPosition());
-        byte[] orig_sal = FINSFrames.decToHexBytes(doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES));
-        byte[] orig_wrk = FINSFrames.decToHexBytes(doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES));
-        byte[] correct  = FINSFrames.decToHexBytes(doubleToDInt(s.correction(), DISP_DEC_CASES));
-        byte[] fix_wrk  = FINSFrames.decToHexBytes(doubleToDInt(s.getFixedWorkload(), DISP_DEC_CASES));
-        
-        byte[] data = {
-          index[2],    index[3],
-          pos[2],      pos[3],
-          orig_sal[2], orig_sal[3],
-          orig_wrk[2], orig_wrk[3],
-          correct[2],  correct[3],
-          fix_wrk[2],  fix_wrk[3],
-        };
-        
-        _client.writeAreaToPLC(data, area, address);
-        address += ERROR_DISP_STEP;
-      }
-    }
-  }
-  
   
   @Override
   public void printResult(SegmentedDisc disc) throws Exception {
@@ -168,64 +139,9 @@ public class NetworkCommunicator implements Communicator {
       int state = (disc.isBrokenDisc() ? STATE_NOK : STATE_OK);
       _client.writeWordToPLC(state, STATE_AREA, STATE_ADDR);
       
-      // Print Errors
-      printErrorSegments(disc.getFrontSegment(), ERROR_DISP_AREA, F_ERROR_DISP_ADDR);
-      printErrorSegments(disc.getBackSegment(),  ERROR_DISP_AREA, B_ERROR_DISP_ADDR);
-      
-      // Print Indexes
-      byte[] buffer = new byte[disc.size() * 2];
-      
-      for (int i = 0; i < buffer.length; i+= 2) {
-        byte[] word = FINSFrames.decToHexBytes((i / 2) + 1);
-        buffer[i]     = word[2];
-        buffer[i + 1] = word[3];
-      }
-      _client.writeAreaToPLC(buffer, PRINT_AREA, P_INDEX_ADDR);
-      
-      // Print Mid Positions
-      for (int i = 0; i < buffer.length; i+= 2) {
-        int pos = disc.getFrontSegment().get(i / 2).midPosition();
-        byte[] word = FINSFrames.decToHexBytes(pos);
-        buffer[i]     = word[2];
-        buffer[i + 1] = word[3];
-      }
-      _client.writeAreaToPLC(buffer, PRINT_AREA, P_MIDPOS_ADDR);
-      
-      // Print Front Salience
-      for (int i = 0; i < buffer.length; i+= 2) {
-        int sal = doubleToDInt(disc.getFrontSegment().get(i / 2).getOriginalSalience(), DISP_DEC_CASES);
-        byte[] word = FINSFrames.decToHexBytes(sal);
-        buffer[i]     = word[2];
-        buffer[i + 1] = word[3];
-      }
-      _client.writeAreaToPLC(buffer, PRINT_AREA, P_FSAL_ADDR);
-      
-      // Print Back Salience
-      for (int i = 0; i < buffer.length; i+= 2) {
-        int sal = doubleToDInt(disc.getBackSegment().get(i / 2).getOriginalSalience(), DISP_DEC_CASES);
-        byte[] word = FINSFrames.decToHexBytes(sal);
-        buffer[i]     = word[2];
-        buffer[i + 1] = word[3];
-      }
-      _client.writeAreaToPLC(buffer, PRINT_AREA, P_BSAL_ADDR);
-      
-   // Print Front Work
-      for (int i = 0; i < buffer.length; i+= 2) {
-        int sal = doubleToDInt(disc.getFrontSegment().get(i / 2).getOriginalWorkload(), DISP_DEC_CASES);
-        byte[] word = FINSFrames.decToHexBytes(sal);
-        buffer[i]     = word[2];
-        buffer[i + 1] = word[3];
-      }
-      _client.writeAreaToPLC(buffer, PRINT_AREA, P_FWORK_ADDR);
-      
-      // Print Back Work
-      for (int i = 0; i < buffer.length; i+= 2) {
-        int sal = doubleToDInt(disc.getBackSegment().get(i / 2).getOriginalWorkload(), DISP_DEC_CASES);
-        byte[] word = FINSFrames.decToHexBytes(sal);
-        buffer[i]     = word[2];
-        buffer[i + 1] = word[3];
-      }
-      _client.writeAreaToPLC(buffer, PRINT_AREA, P_BWORK_ADDR);
+      // Render data to the NB Console
+      DiscRenderer nbconsole = new NBConsoleRenderer(_client);
+      nbconsole.render(disc);
       
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
@@ -256,26 +172,7 @@ public class NetworkCommunicator implements Communicator {
    */
   private double dIntToDouble(byte high_part, byte low_part, int decimal_cases) {
     int word = (((int)high_part & 0xff) << 8) | ((int)low_part & 0xff);
-    return decimalIntToDouble(word, decimal_cases);
-  }
-  
-  /**
-   * 
-   * @param value
-   * @param dec_cases
-   * @return
-   */
-  private int doubleToDInt(double value, int dec_cases) {
-    return (int) Math.round((value * Math.pow(10, dec_cases)));
-  } 
-  
-  /**
-   * 
-   * @param word
-   * @return
-   */
-  private double decimalIntToDouble(int word, int decimal_cases) {
-    return (double) word / Math.pow(10, decimal_cases);
+    return Utils.decimalIntToDouble(word, decimal_cases);
   }
   
   
@@ -304,23 +201,5 @@ public class NetworkCommunicator implements Communicator {
   protected static final int    STATE_NOK   = Configurations.getInstance().getInt("STATE_NOK");
   protected static final int    STATE_LDING = Configurations.getInstance().getInt("STATE_LDING");
   protected static final int    STATE_ERROR = Configurations.getInstance().getInt("STATE_ERROR");
-  
-  // Print Info
-  protected static final int DISP_DEC_CASES   = Configurations.getInstance().getInt("DISP_DEC_CASES");
-  
-  protected static final String PRINT_AREA    = Configurations.getInstance().getProperty("PRINT_AREA");
-  protected static final int    P_INDEX_ADDR  = Configurations.getInstance().getInt("P_INDEX_ADDR");
-  protected static final int    P_MIDPOS_ADDR = Configurations.getInstance().getInt("P_MIDPOS_ADDR");
-  protected static final int    P_FSAL_ADDR   = Configurations.getInstance().getInt("P_FSAL_ADDR");
-  protected static final int    P_BSAL_ADDR   = Configurations.getInstance().getInt("P_BSAL_ADDR");
-  protected static final int    P_FWORK_ADDR  = Configurations.getInstance().getInt("P_FWORK_ADDR");
-  protected static final int    P_BWORK_ADDR  = Configurations.getInstance().getInt("P_BWORK_ADDR");
-  
-  // Errors
-  protected static final String ERROR_DISP_AREA   = Configurations.getInstance().getProperty("ERROR_DISP_AREA");
-  protected static final int    F_ERROR_DISP_ADDR = Configurations.getInstance().getInt("F_ERROR_DISP_ADDR");
-  protected static final int    B_ERROR_DISP_ADDR = Configurations.getInstance().getInt("B_ERROR_DISP_ADDR");
-  protected static final int    MAX_ERRORS_DISP   = Configurations.getInstance().getInt("MAX_ERRORS_DISP");
-  protected static final int    ERROR_DISP_STEP   = Configurations.getInstance().getInt("ERROR_DISP_STEP");
 
 }

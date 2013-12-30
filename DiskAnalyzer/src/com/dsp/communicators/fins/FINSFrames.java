@@ -1,10 +1,13 @@
 package com.dsp.communicators.fins;
 
+import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.exceptions.UnknownCommandTypeException;
 import com.dsp.communicators.exceptions.UnknownMemoryAreaException;
 
 public class FINSFrames {
 
+  public static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
+  
 //==================================================================================
   // == FINS HEADER FRAME ==
   public static final byte[] FINS_HEADER = {

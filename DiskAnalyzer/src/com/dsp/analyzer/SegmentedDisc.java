@@ -40,11 +40,11 @@ public class SegmentedDisc {
     calculateWorkload(_backSegments);
   }
   
-  public List<Segment> getFrontSegment() {
+  public List<Segment> getFrontSegments() {
     return _frontSegments;
   }
   
-  public List<Segment> getBackSegment() {
+  public List<Segment> getBackSegments() {
     return _backSegments;
   }
 

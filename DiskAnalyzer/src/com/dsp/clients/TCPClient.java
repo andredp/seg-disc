@@ -77,6 +77,7 @@ public class TCPClient implements Client {
   @Override
   public boolean ping() {
     try {
+      // TODO Send a TCP Frame
       _output.writeByte('0');
       return true;
     } catch (IOException e) {
