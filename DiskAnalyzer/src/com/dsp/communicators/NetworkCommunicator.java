@@ -169,13 +169,8 @@ public class NetworkCommunicator implements Communicator {
       _client.writeWordToPLC(state, STATE_AREA, STATE_ADDR);
       
       // Print Errors
-      final String F_ERROR_DISP_AREA = "D";
-      final int    F_ERROR_DISP_ADDR = 20001;
-      final String B_ERROR_DISP_AREA = "D";
-      final int    B_ERROR_DISP_ADDR = 20101;
-      
-      printErrorSegments(disc.getFrontSegment(), F_ERROR_DISP_AREA, F_ERROR_DISP_ADDR);
-      printErrorSegments(disc.getBackSegment(),  B_ERROR_DISP_AREA, B_ERROR_DISP_ADDR);
+      printErrorSegments(disc.getFrontSegment(), ERROR_DISP_AREA, F_ERROR_DISP_ADDR);
+      printErrorSegments(disc.getBackSegment(),  ERROR_DISP_AREA, B_ERROR_DISP_ADDR);
       
       // Print Indexes
       byte[] buffer = new byte[disc.size() * 2];
@@ -322,6 +317,10 @@ public class NetworkCommunicator implements Communicator {
   protected static final int    P_BWORK_ADDR  = Configurations.getInstance().getInt("P_BWORK_ADDR");
   
   // Errors
-  protected static final int MAX_ERRORS_DISP  = Configurations.getInstance().getInt("MAX_ERRORS_DISP");
-  protected static final int ERROR_DISP_STEP  = Configurations.getInstance().getInt("ERROR_DISP_STEP");
+  protected static final String ERROR_DISP_AREA   = Configurations.getInstance().getProperty("ERROR_DISP_AREA");
+  protected static final int    F_ERROR_DISP_ADDR = Configurations.getInstance().getInt("F_ERROR_DISP_ADDR");
+  protected static final int    B_ERROR_DISP_ADDR = Configurations.getInstance().getInt("B_ERROR_DISP_ADDR");
+  protected static final int    MAX_ERRORS_DISP   = Configurations.getInstance().getInt("MAX_ERRORS_DISP");
+  protected static final int    ERROR_DISP_STEP   = Configurations.getInstance().getInt("ERROR_DISP_STEP");
+
 }
