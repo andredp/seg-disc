@@ -11,7 +11,7 @@ public abstract class FINSClient {
   protected static final int READCHUNK     = Configurations.getInstance().getInt("PLC_READCHUNK");
   protected static final int WRITECHUNK    = Configurations.getInstance().getInt("PLC_WRITECHUNK");
   
-  public abstract void connect()    throws Exception;
+  public abstract void testOrConnect()    throws Exception;
   public abstract void disconnect() throws Exception;
   
   protected abstract byte[] getReadResponseFrame(String area, int address, int words) throws Exception;
@@ -62,7 +62,8 @@ public abstract class FINSClient {
    * @throws Exception
    */
   public boolean readBitFromPLC(String area, int offset, int bit)  throws Exception {
-    byte read = (byte) (readWordFromPLC(area, offset) & (0x01 << bit) >> bit);
+    int word = readWordFromPLC(area, offset);
+    byte read = (byte) (word & (0x01 << bit) >> bit);
     return (read == 0x01 ? true : false);
   }
   

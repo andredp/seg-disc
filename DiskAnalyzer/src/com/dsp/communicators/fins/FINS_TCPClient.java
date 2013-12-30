@@ -7,7 +7,8 @@ public class FINS_TCPClient extends FINSClient {
 
   private TCPClient _client       = null;
   private byte[] _fins_header     = null;
-  private byte[] _read_tcp_header = null; 
+  private byte[] _read_tcp_header = null;
+  private boolean _initialized    = false;
   
   public FINS_TCPClient(String host, int port) throws Exception {
     _client = new TCPClient(host, port);
@@ -15,7 +16,12 @@ public class FINS_TCPClient extends FINSClient {
   }
   
   @Override
-  public void connect() throws Exception {
+  public void testOrConnect() throws Exception {
+    if (_initialized) {
+      return;
+    }
+    Log.info("Could not ping the host, reseting connection.");
+    _initialized = true;
     
     _client.send(FINSFrames.createTCPConnectFrame(0));
     byte[] tcp_frame = new byte[24];
@@ -83,7 +89,7 @@ public class FINS_TCPClient extends FINSClient {
   protected byte[] getWriteResponseFrame(byte[] data, String area, int address) throws Exception {
     int words = data.length / 2;
     // sending the write request
-    _client.send(FINSFrames.createTCPSendFrame(FINSFrames.SEND_FRAME_LENGTH + words));
+    _client.send(FINSFrames.createTCPSendFrame(FINSFrames.SEND_FRAME_LENGTH + data.length));
     _client.send(_fins_header);
     _client.send(FINSFrames.createCommandFrame("area_write", area, address, words));
     _client.send(data);
@@ -104,7 +110,12 @@ public class FINS_TCPClient extends FINSClient {
     byte[] response = new byte[length];
     _client.receive(response);
     
-    return response;
+    byte[] response_frame = new byte[length - FINSFrames.FINS_HEADER.length];
+    for (int i = 0; i < response_frame.length; i++) {
+      response_frame[i] = response[i + FINSFrames.FINS_HEADER.length];
+    }
+    
+    return response_frame;
   }
 
 }

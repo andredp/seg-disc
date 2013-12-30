@@ -14,20 +14,29 @@ public class DiscAnalyzer {
     Configurations.getInstance().load("config.dat");
     Log.DEBUG(); // debug level
     
-    Communicator receiver = new NetworkCommunicator();
-    
+    Communicator plc = null;
+    try {
+      plc = new NetworkCommunicator();
+    } catch (Exception e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
+
     while (true) {
       try {
-        if (!receiver.hasData()) return; // it is blocked here on the Network communicator
-        receiver.notifyLoading();
+        Log.info("Waiting for available data.");
+        if (!plc.hasData()) return; // it is blocked here on the Network communicator
+        Log.info("Fetching data.");
+        plc.notifyLoading();
         
-        double workTolerance = receiver.getWorkTolerance();
-        DiscRawData data     = receiver.receive();
+        double workTolerance = plc.getWorkTolerance();
+        DiscRawData data     = plc.receive();
         SegmentedDisc disc   = new SegmentedDisc(data, workTolerance);
         
         Log.info("\n" + disc);
-        receiver.printResult(disc);
-        receiver.workDone();
+        plc.printResult(disc);
+        plc.workDone();
+        Log.info("Work done.");
         
       } catch (Exception e) {
         e.printStackTrace();

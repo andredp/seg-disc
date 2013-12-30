@@ -74,4 +74,14 @@ public class TCPClient implements Client {
     }
   }
 
+  @Override
+  public boolean ping() {
+    try {
+      _output.writeByte('0');
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
 }

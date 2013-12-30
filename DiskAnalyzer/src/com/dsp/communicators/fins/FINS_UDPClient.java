@@ -4,7 +4,7 @@ package com.dsp.communicators.fins;
 public class FINS_UDPClient extends FINSClient {
   
   @Override
-  public void connect() throws Exception {
+  public void testOrConnect() throws Exception {
  // TODO Auto-generated method stub
   }
 

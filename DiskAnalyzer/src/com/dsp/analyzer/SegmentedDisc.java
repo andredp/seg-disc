@@ -134,10 +134,12 @@ public class SegmentedDisc {
       }
     }
 
-    // Calculating the mean of readings per segment to see if the last and the
-    // first
-    // segment need to concatenate (in case it started reading in the middle of
-    // a segment)
+    if (disc.size() < 3) {
+      return;
+    }
+    
+    // Calculating the mean of readings per segment to see if the last and the first
+    // segment need to concatenate (in case it started reading in the middle of a segment)
     double[] segmentReadings = new double[disc.size() - 2]; // the first and
                                                             // last do not count
     for (int ix = 0; ix < segmentReadings.length; ix++) {

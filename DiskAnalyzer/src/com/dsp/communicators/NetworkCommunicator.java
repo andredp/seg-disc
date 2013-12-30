@@ -11,41 +11,50 @@ import com.esotericsoftware.minlog.Log;
 
 public class NetworkCommunicator implements Communicator {
   
+  FINSClient _client = null;
+  
+  public NetworkCommunicator() throws Exception {
+    try {
+      _client = new FINS_TCPClient(PLC_IP, PLC_PORT);
+    } catch (Exception e) {
+      Log.error("NetworkDataReceiver", "Could not receive the data.", e);
+      throw e;
+    }
+  }
+  
   /**
    * 
    */
   @Override
   public DiscRawData receive() throws Exception {
-    FINSClient client = null;
+    DummyCommunicator comm = new DummyCommunicator();
+    Thread.sleep(2000);
+    return comm.receive();
+    /*
     try {
-      client = new FINS_TCPClient(PLC_IP, PLC_PORT);
-      client.connect();
+      _client.testOrConnect();
       
       int fwords = FRONT_ADDR[1] - FRONT_ADDR[0];
-      int bwords = BACK_ADDR[1] - BACK_ADDR[0];
-      ArrayList<Byte> frontBytes = client.readAreaFromPLC(SEG_DATA_AREA, FRONT_ADDR[0], fwords);
-      ArrayList<Byte> backBytes  = client.readAreaFromPLC(SEG_DATA_AREA, BACK_ADDR[0],  bwords);
+      int bwords = BACK_ADDR[1]  - BACK_ADDR[0];
+      ArrayList<Byte> frontBytes = _client.readAreaFromPLC(SEG_DATA_AREA, FRONT_ADDR[0], fwords);
+      ArrayList<Byte> backBytes  = _client.readAreaFromPLC(SEG_DATA_AREA, BACK_ADDR[0],  bwords);
       
       return new DiscRawData(parseRawBytes(frontBytes), parseRawBytes(backBytes));
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not receive the data.", e);
       throw e;
-    } finally {
-      if (client != null) {
-        client.disconnect();
-      }
-    }
+    }*/
   }
   
-  
+  /**
+   * 
+   */
   @Override
   public boolean hasData() throws Exception {
-    FINSClient client = null;
     try {
-      client = new FINS_TCPClient(PLC_IP, PLC_PORT);
-      client.connect();
+      _client.testOrConnect();
       while (true) {
-        boolean run_bit = client.readBitFromPLC(RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
+        boolean run_bit = _client.readBitFromPLC(RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
         if (run_bit == true) {
           return true;
         }
@@ -54,10 +63,6 @@ public class NetworkCommunicator implements Communicator {
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
       throw e;
-    } finally {
-      if (client != null) {
-        client.disconnect();
-      }
     }
   }
   
@@ -67,42 +72,36 @@ public class NetworkCommunicator implements Communicator {
    */
   @Override
   public void notifyLoading() throws Exception {
-    /*FINSClient client = null;
     try {
-      client = new FINS_TCPClient(PLC_IP, PLC_PORT);
-      client.connect();
-    //  client.writeBitToPLC(false, , address, bit)
+      _client.testOrConnect();
+      _client.writeWordToPLC(STATE_LDING, STATE_AREA, STATE_ADDR);
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
       throw e;
-    } finally {
-      if (client != null) {
-        client.disconnect();
-      }
-    }*/
-    // testing git-hub
+    }
   }
   
   @Override
   public void printResult(SegmentedDisc disc) throws Exception {
-    // TODO
+    try {
+      _client.testOrConnect();
+      int state = (disc.isBrokenDisc() ? STATE_NOK : STATE_OK);
+      _client.writeWordToPLC(state, STATE_AREA, STATE_ADDR);
+    } catch (Exception e) {
+      Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
+      throw e;
+    }
   }
   
   
   @Override
   public void workDone() throws Exception {
-    FINSClient client = null;
     try {
-      client = new FINS_TCPClient(PLC_IP, PLC_PORT);
-      client.connect();
-      client.writeBitToPLC(false, RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
+      _client.testOrConnect();
+      _client.writeBitToPLC(false, RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
       throw e;
-    } finally {
-      if (client != null) {
-        client.disconnect();
-      }
     }
   }
 
@@ -112,19 +111,13 @@ public class NetworkCommunicator implements Communicator {
    */
   @Override
   public double getWorkTolerance() throws Exception {
-    FINSClient client = null;
     try {
-      client = new FINS_TCPClient(PLC_IP, PLC_PORT);
-      client.connect();
-      int word = client.readWordFromPLC(WORK_TOL_AREA, WORK_TOL_ADDR);
+      _client.testOrConnect();
+      int word = _client.readWordFromPLC(WORK_TOL_AREA, WORK_TOL_ADDR);
       return decimalIntToDouble(word, WORK_TOL_DEC_CASES);
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
       throw e;
-    } finally {
-      if (client != null) {
-        client.disconnect();
-      }
     }
   }
   
@@ -181,4 +174,9 @@ public class NetworkCommunicator implements Communicator {
   protected static final String WORK_TOL_AREA  = Configurations.getInstance().getProperty("WORK_TOL_AREA");
   protected static final int    WORK_TOL_ADDR  = Configurations.getInstance().getInt("WORK_TOL_ADDR");
 
+  protected static final String STATE_AREA  = Configurations.getInstance().getProperty("STATE_AREA");
+  protected static final int    STATE_ADDR  = Configurations.getInstance().getInt("STATE_ADDR");
+  protected static final int    STATE_OK    = Configurations.getInstance().getInt("STATE_OK");
+  protected static final int    STATE_NOK   = Configurations.getInstance().getInt("STATE_NOK");
+  protected static final int    STATE_LDING = Configurations.getInstance().getInt("STATE_LDING");
 }

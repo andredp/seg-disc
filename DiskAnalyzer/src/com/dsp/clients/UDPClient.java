@@ -89,4 +89,10 @@ public class UDPClient implements Client {
     _socket.close();
   }
 
+  @Override
+  public boolean ping() {
+    // TODO
+    return false;
+  }
+
 }

@@ -32,6 +32,13 @@ WORK_TOL_AREA = D
 WORK_TOL_ADDR = 301
 WORK_TOL_DEC_CASES = 1
 
+#Analysis State
+STATE_AREA  = D
+STATE_ADDR  = 30
+STATE_OK    = 1
+STATE_NOK   = 2
+STATE_LDING = 4
+
 ## Internal Settings (WARNING: Edit only if you ARE sure of what you're doing!)
 ####################
 

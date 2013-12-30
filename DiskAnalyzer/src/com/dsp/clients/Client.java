@@ -8,6 +8,8 @@ public interface Client {
   void send(byte[] data) throws Exception;  
   void receive(byte[] response) throws Exception;
     
+  boolean ping();
+  
   void close();
   
 }

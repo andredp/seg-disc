@@ -231,7 +231,7 @@ public class FINSFrames {
    */
   public static byte[] getCommandCode(String type) throws UnknownCommandTypeException {
     if (type.equalsIgnoreCase("area_read"))  { return new byte[] { (byte) 0x01, (byte) 0x01 }; }
-    if (type.equalsIgnoreCase("area_write")) { return new byte[] { (byte) 0x02, (byte) 0x02 }; }
+    if (type.equalsIgnoreCase("area_write")) { return new byte[] { (byte) 0x01, (byte) 0x02 }; }
     // enter other commands...
     throw new UnknownCommandTypeException(type);
   }
