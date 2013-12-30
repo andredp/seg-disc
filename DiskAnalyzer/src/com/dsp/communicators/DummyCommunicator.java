@@ -79,5 +79,11 @@ public class DummyCommunicator implements Communicator {
     // TODO Auto-generated method stub
     
   }
+
+  @Override
+  public void disconnect() throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
   
 }

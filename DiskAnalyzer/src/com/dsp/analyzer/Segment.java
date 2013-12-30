@@ -122,6 +122,14 @@ public class Segment {
    * 
    * @return
    */
+  public double correction() {
+    return _origSalience - _fixedSalience;
+  }
+  
+  /**
+   * 
+   * @return
+   */
   public boolean isBroken() {
     return _origSalience != _fixedSalience;
   }

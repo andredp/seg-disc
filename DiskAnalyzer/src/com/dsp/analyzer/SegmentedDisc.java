@@ -15,10 +15,11 @@ public class SegmentedDisc {
   private static final int      ERROR_THRESHOLD  = Configurations.getInstance().getInt("SEG_ERROR_THRESHOLD");
 
   private List<Segment> _frontSegments = new ArrayList<Segment>();
-  private List<Segment> _backSegments = new ArrayList<Segment>();
+  private List<Segment> _backSegments  = new ArrayList<Segment>();
 
   private boolean _brokenDisc = false;
   private double _maxWorkload;
+  private boolean _readingError = false;
 
   /**
    * 
@@ -29,6 +30,7 @@ public class SegmentedDisc {
     parseReadings(data.getBack(), _backSegments);
 
     if (_frontSegments.size() != _backSegments.size()) {
+      _readingError = true;
       Log.warn("SegmentedDisk", "Back and Front side have a different number of segments.");
     }
     
@@ -37,12 +39,34 @@ public class SegmentedDisc {
     calculateWorkload(_frontSegments);
     calculateWorkload(_backSegments);
   }
+  
+  public List<Segment> getFrontSegment() {
+    return _frontSegments;
+  }
+  
+  public List<Segment> getBackSegment() {
+    return _backSegments;
+  }
 
   /**
    * 
    */
   public boolean isBrokenDisc() {
     return _brokenDisc;
+  }
+  
+  /**
+   * 
+   */
+  public boolean readingError() {
+    return _readingError;
+  }
+  
+  /**
+   * 
+   */
+  public int size() {
+    return (_frontSegments.size() != _backSegments.size() ? 0 : _backSegments.size());
   }
 
   /**

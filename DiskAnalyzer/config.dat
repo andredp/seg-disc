@@ -8,7 +8,7 @@
 
 ## *** Network settings
 
-PC_IP    = 192.168.250.10
+PC_IP    = 192.168.250.18
 PLC_IP   = 192.168.250.1
 PLC_PORT = 9600
 
@@ -37,7 +37,25 @@ STATE_AREA  = D
 STATE_ADDR  = 30
 STATE_OK    = 1
 STATE_NOK   = 2
+# this state is internal to the console
 STATE_LDING = 4
+STATE_ERROR = 5
+
+
+	# PRINTING INFO
+DISP_DEC_CASES   = 2
+
+PRINT_AREA = D
+P_INDEX_ADDR  = 12001
+P_MIDPOS_AREA = 12201
+P_FSAL_ADDR   = 13001
+P_BSAL_ADDR   = 14001
+P_FWORK_ADDR  = 13201
+P_BWORK_ADDR  = 14201
+
+# Errors
+MAX_ERRORS_DISP  = 5
+ERROR_DISP_STEP  = 10
 
 ## Internal Settings (WARNING: Edit only if you ARE sure of what you're doing!)
 ####################

@@ -20,5 +20,7 @@ public interface Communicator {
   void workDone() throws Exception;
 
   void printResult(SegmentedDisc disc) throws Exception;
+
+  void disconnect() throws Exception;
   
 }
