@@ -83,8 +83,8 @@ public class NBConsoleRenderer implements DiscRenderer {
    */
   private void printIndexes(SegmentedDisc disc) throws Exception {
     byte[] buffer = new byte[disc.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= 2) {
-      byte[] word = FINSFrames.decToHexBytes((i / 2) + 1);
+    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
+      byte[] word = FINSFrames.decToHexBytes((i / FINSFrames.BYTES_PER_WORD) + 1);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
     }
@@ -98,8 +98,8 @@ public class NBConsoleRenderer implements DiscRenderer {
    */
   private void printMidPositions(SegmentedDisc disc) throws Exception {
     byte[] buffer = new byte[disc.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= 2) {
-      int pos = disc.getFrontSegments().get(i / 2).midPosition();
+    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
+      int pos = disc.getFrontSegments().get(i / FINSFrames.BYTES_PER_WORD).midPosition();
       byte[] word = FINSFrames.decToHexBytes(pos);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
@@ -115,8 +115,8 @@ public class NBConsoleRenderer implements DiscRenderer {
    */
   private void printOriginalSaliences(List<Segment> segments, int address) throws Exception {
     byte[] buffer = new byte[segments.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= 2) {
-      int sal = Utils.doubleToDInt(segments.get(i / 2).getOriginalSalience(), DISP_DEC_CASES);
+    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
+      int sal = Utils.doubleToDInt(segments.get(i / FINSFrames.BYTES_PER_WORD).getOriginalSalience(), DISP_DEC_CASES);
       byte[] word = FINSFrames.decToHexBytes(sal);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
@@ -132,8 +132,8 @@ public class NBConsoleRenderer implements DiscRenderer {
    */
   private void printOriginalWorkload(List<Segment> segments, int address) throws Exception {
     byte[] buffer = new byte[segments.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= 2) {
-      int work = Utils.doubleToDInt(segments.get(i / 2).getOriginalWorkload(), DISP_DEC_CASES);
+    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
+      int work = Utils.doubleToDInt(segments.get(i / FINSFrames.BYTES_PER_WORD).getOriginalWorkload(), DISP_DEC_CASES);
       byte[] word = FINSFrames.decToHexBytes(work);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];

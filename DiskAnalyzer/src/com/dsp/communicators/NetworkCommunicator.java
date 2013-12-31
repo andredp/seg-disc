@@ -114,9 +114,9 @@ public class NetworkCommunicator implements Communicator {
     try {
       _client.testOrConnect();
       int word = _client.readWordFromPLC(WORK_TOL_AREA, WORK_TOL_ADDR);
-      double tolerance = Utils.decimalIntToDouble(word, WORK_TOL_DEC_CASES);
+      double tolerance = Utils.decimalIntToDouble(word, WORK_TOL_DEC_CASES) / 100.0;
       Log.info("Tolerance: " + tolerance);
-      return tolerance / 100.0;
+      return tolerance;
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
       throw e;
