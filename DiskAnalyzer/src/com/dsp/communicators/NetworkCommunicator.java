@@ -157,9 +157,10 @@ public class NetworkCommunicator implements Communicator {
    * @return
    */
   private double[] parseRawBytes(ArrayList<Byte> rawBytes) {
-    double[] segData = new double[rawBytes.size() / 2];
+    double[] segData = new double[rawBytes.size() / FINSFrames.BYTES_PER_WORD];
     for (int i = 0; i < segData.length; i++) {
-      segData[i] = dIntToDouble(rawBytes.get(i * 2), rawBytes.get((i * 2) + 1), SEG_DATA_DEC_CASES);
+      segData[i] = dIntToDouble(rawBytes.get( i * FINSFrames.BYTES_PER_WORD), 
+                                rawBytes.get((i * FINSFrames.BYTES_PER_WORD) + 1), SEG_DATA_DEC_CASES);
     }
     return segData;
   }
