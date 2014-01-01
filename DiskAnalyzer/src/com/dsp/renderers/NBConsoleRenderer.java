@@ -50,6 +50,7 @@ public class NBConsoleRenderer implements DiscRenderer {
     for (Segment s : seg_info) {
       if (s.isBroken()) {
         if (++errors > MAX_ERRORS_DISP) {
+          _client.writeWordToPLC(STATE_MORE_ERR, STATE_AREA, STATE_ADDR);
           Log.warn("Too many errors!");
           return;
         }
@@ -59,7 +60,9 @@ public class NBConsoleRenderer implements DiscRenderer {
         byte[] orig_sal = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES));
         byte[] orig_wrk = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES));
         byte[] correct  = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.correction(),          DISP_DEC_CASES));
-        byte[] fix_wrk  = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.getFixedWorkload(),    DISP_DEC_CASES));
+        
+        double fixed_work = (s.getFixedWorkload() == 0.0 ? 0.01 : s.getFixedWorkload());
+        byte[] fix_wrk  = FINSFrames.decToHexBytes(Utils.doubleToDInt(fixed_work, DISP_DEC_CASES));
         
         byte[] data = {
           index[2],    index[3],
@@ -141,6 +144,11 @@ public class NBConsoleRenderer implements DiscRenderer {
     _client.writeAreaToPLC(buffer, PRINT_AREA, address);
   }
   
+  // State
+  protected static final String STATE_AREA     = Configurations.getInstance().getProperty("STATE_AREA");
+  protected static final int    STATE_ADDR     = Configurations.getInstance().getInt("STATE_ADDR");
+  protected static final int    STATE_MORE_ERR = Configurations.getInstance().getInt("STATE_MORE_ERR");
+
   // Print Info
   protected static final int DISP_DEC_CASES   = Configurations.getInstance().getInt("DISP_DEC_CASES");
   

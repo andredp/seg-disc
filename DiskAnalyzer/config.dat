@@ -35,14 +35,13 @@ WORK_TOL_ADDR = 301
 WORK_TOL_DEC_CASES = 1
 
 #Analysis State
-STATE_AREA  = D
-STATE_ADDR  = 30
-STATE_OK    = 1
-STATE_NOK   = 2
-# this state is internal to the console
-STATE_LDING = 4
-STATE_ERROR = 5
-
+STATE_AREA = D
+STATE_ADDR = 30
+STATE_OK       = 1
+STATE_NOK      = 2
+STATE_LDING    = 4
+STATE_ERROR    = 5
+STATE_MORE_ERR = 6
 
 	# PRINTING INFO
 DISP_DEC_CASES   = 2
