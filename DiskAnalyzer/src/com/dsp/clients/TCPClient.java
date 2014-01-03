@@ -46,7 +46,7 @@ public class TCPClient implements Client {
   }
 
   @Override
-  public void send(byte[] data) throws Exception {
+  public void send(byte[] data) throws IOException {
     try {
       _output.write(data);
     } catch (IOException e) {
@@ -71,17 +71,6 @@ public class TCPClient implements Client {
       _socket.close();
     } catch (IOException e) {
       Log.error("TCPClient", "Error closing the socket.", e);
-    }
-  }
-
-  @Override
-  public boolean ping() {
-    try {
-      // TODO Send a TCP Frame
-      _output.writeByte('0');
-      return true;
-    } catch (IOException e) {
-      return false;
     }
   }
 

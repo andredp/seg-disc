@@ -1,10 +1,12 @@
 package com.dsp.communicators.fins;
 
+import com.dsp.communicators.fins.frames.FINSCommandResponseFrame;
+
 
 public class FINS_UDPClient extends FINSClient {
   
   @Override
-  public void testOrConnect() throws Exception {
+  public void connect() throws Exception {
  // TODO Auto-generated method stub
   }
 
@@ -16,18 +18,19 @@ public class FINS_UDPClient extends FINSClient {
 
 
   @Override
-  protected byte[] getReadResponseFrame(String area, int offset, int words)
-      throws Exception {
+  protected FINSCommandResponseFrame sendCommand(String type, String area,
+      int address, int words) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
 
   @Override
-  protected byte[] getWriteResponseFrame(byte[] data, String area,
-      int address) throws Exception {
+  protected FINSCommandResponseFrame sendCommand(String type, String area,
+      int address, int words, byte[] data) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
+
 
 }

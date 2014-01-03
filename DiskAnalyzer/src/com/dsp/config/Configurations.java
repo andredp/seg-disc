@@ -1,4 +1,4 @@
-package com.dsp.analyzer.config;
+package com.dsp.config;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

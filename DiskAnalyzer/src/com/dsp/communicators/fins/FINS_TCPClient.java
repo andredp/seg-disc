@@ -1,121 +1,147 @@
 package com.dsp.communicators.fins;
 
+import java.io.IOException;
+
 import com.dsp.clients.TCPClient;
+import com.dsp.communicators.fins.frames.FINSCommandFrame;
+import com.dsp.communicators.fins.frames.FINSCommandResponseFrame;
+import com.dsp.communicators.fins.frames.FINSHeaderFrame;
+import com.dsp.communicators.fins.frames.FINSTCPHeaderConnResponseFrame;
+import com.dsp.communicators.fins.frames.FINSTCPHeaderConnectionFrame;
+import com.dsp.communicators.fins.frames.FINSTCPHeaderSendFrame;
 import com.esotericsoftware.minlog.Log;
 
 public class FINS_TCPClient extends FINSClient {
 
-  private TCPClient _client       = null;
-  private byte[] _fins_header     = null;
-  private byte[] _read_tcp_header = null;
-  private boolean _initialized    = false;
+  private TCPClient _client;
+  private String    _host;
+  private int       _port;
+  private boolean   _initialized = false;
+  
+  // requests
+  private FINSTCPHeaderSendFrame _tcpHeaderFrame  = new FINSTCPHeaderSendFrame();
+  private FINSHeaderFrame        _finsHeaderFrame = new FINSHeaderFrame();
+  private FINSCommandFrame       _commandFrame    = new FINSCommandFrame();
+  
+  // responses
+  private FINSTCPHeaderSendFrame   _tcpRespFrame  = new FINSTCPHeaderSendFrame();
+  private FINSHeaderFrame          _finsRespFrame = new FINSHeaderFrame();
+  private FINSCommandResponseFrame _commRespFrame = new FINSCommandResponseFrame();
   
   public FINS_TCPClient(String host, int port) throws Exception {
-    _client = new TCPClient(host, port);
-    _read_tcp_header = FINSFrames.createTCPSendFrame(FINSFrames.SEND_FRAME_LENGTH);
+    _host = host;
+    _port = port;
+    _client = new TCPClient(_host, _port);
   }
   
+  /**
+   * 
+   */
   @Override
-  public void testOrConnect() throws Exception {
-    if (_initialized) {
-      return;
-    }
-    Log.info("Could not ping the host, reseting connection.");
+  public void connect() throws Exception {
+    connect(false);
+  }
+  
+  /**
+   * 
+   * @param forceReconnection
+   * @throws Exception
+   */
+  private void connect(boolean forceReconnection) throws Exception {
+    if (_initialized && !forceReconnection) return;
     _initialized = true;
     
-    _client.send(FINSFrames.createTCPConnectFrame(0));
-    byte[] tcp_frame = new byte[24];
-    _client.receive(tcp_frame);
-    
-    if (FINSFrames.tcpHeaderErrorCode(tcp_frame) != 0) {
-      Log.error("TCPFinsClient", "FINS/TCP illegal command error");
-      throw new Exception("Could not establish connection.");
+    if (forceReconnection) {
+      _client.close();
+      _client = new TCPClient(_host, _port);
     }
     
-    byte clientNode = tcp_frame[FINSFrames.FTF_CLIN + 3];
-    byte serverNode = tcp_frame[FINSFrames.FTF_SRVN + 3];
-    _fins_header = FINSFrames.createFinsHeaderFrame(clientNode, serverNode, 0);
+    FINSTCPHeaderConnectionFrame connFrame = new FINSTCPHeaderConnectionFrame();
+    connFrame.setClientNode((byte) 0x00); // automatic node assignment
+    _client.send(connFrame.getRawFrame());
     
-    Log.info("TCPFinsClient", "Handshake successfull");
-    Log.info("TCPFinsClient", "Client Node: " + clientNode);
-    Log.info("TCPFinsClient", "Server Node: " + serverNode);
+    FINSTCPHeaderConnResponseFrame connResponse = new FINSTCPHeaderConnResponseFrame();
+    _client.receive(connResponse.getRawFrame());
+    if (connResponse.hasError()) { // error check
+      Log.error("TCPFinsClient", "FINS/TCP error. Could not connect to host.");
+      throw new Exception("Could not establish connection.");
+    }
+    _finsHeaderFrame.setDA1(connResponse.getServerNode());
+    _finsHeaderFrame.setSA1(connResponse.getClientNode());
+    
+    Log.info("TCPFinsClient", "Connection Successfull!");
+    Log.info("\tClient Node: " + _finsHeaderFrame.getSA1());
+    Log.info("\tServer Node: " + _finsHeaderFrame.getDA1());
   }
 
-  
+  /**
+   * 
+   */
   @Override
   public void disconnect() throws Exception {
     _client.close();
   }
-
+  
   /**
    * 
    */
   @Override
-  protected byte[] getReadResponseFrame(String area, int offset, int words) throws Exception {
-    // requesting positions
-    _client.send(_read_tcp_header);
-    _client.send(_fins_header);
-    _client.send(FINSFrames.createCommandFrame("area_read", area, offset, words));
-    
-    // getting the TCP header
-    byte[] header_resp = new byte[FINSFrames.FINS_TCP_SEND_FRAME.length];
-    _client.receive(header_resp);
-    if (FINSFrames.tcpHeaderErrorCode(header_resp) != 0) {
-      Log.error("TCPFinsClient", "FINS/TCP Send Frame error. CODE: " 
-          + FINSFrames.tcpHeaderErrorCode(header_resp));
-      throw new Exception("Couldn't read data.");
-    }
-    
-    // getting the actual response frame
-    int length  = ((int) header_resp[FINSFrames.FTF_LENG + 2] & 0xff) << 8;
-        length |= ((int) header_resp[FINSFrames.FTF_LENG + 3] & 0xff);
-        length -= FINSFrames.FTF_DATALENGTH;
-    byte[] response = new byte[length];
-    _client.receive(response);
-    
-    byte[] response_frame = new byte[length - FINSFrames.FINS_HEADER.length];
-    for (int i = 0; i < response_frame.length; i++) {
-      response_frame[i] = response[i + FINSFrames.FINS_HEADER.length];
-    }
-    
-    return response_frame;
+  public FINSCommandResponseFrame sendCommand(String type, String area, int address, int words) throws Exception {
+    return sendCommand(type, area, address, words, null);
   }
-  
   
   /**
    * 
    */
- @Override
-  protected byte[] getWriteResponseFrame(byte[] data, String area, int address) throws Exception {
-    int words = data.length / 2;
-    // sending the write request
-    _client.send(FINSFrames.createTCPSendFrame(FINSFrames.SEND_FRAME_LENGTH + data.length));
-    _client.send(_fins_header);
-    _client.send(FINSFrames.createCommandFrame("area_write", area, address, words));
-    _client.send(data);
-    
-    // getting the TCP header
-    byte[] header_resp = new byte[FINSFrames.FINS_TCP_SEND_FRAME.length];
-    _client.receive(header_resp);
-    if (FINSFrames.tcpHeaderErrorCode(header_resp) != 0) {
-      Log.error("TCPFinsClient", "FINS/TCP Send Frame error. CODE: " 
-          + FINSFrames.tcpHeaderErrorCode(header_resp));
-      throw new Exception("Couldn't write the data.");
+  @Override
+  public FINSCommandResponseFrame sendCommand(String type, String area, int address, int words, byte[] data) throws Exception {
+    int tries = 2;
+    while (tries >= 0) {
+      try {
+        return internalSendCommand(type, area, address, words, data);
+      } catch (IOException e) {
+        connect(true);
+        tries--;
+      }
     }
+    // in case it cannot connect in the number of tries allowed
+    throw new Exception("Couldn't connect to the host.");
+  }
+  
+  /**
+   * 
+   * @param type
+   * @param area
+   * @param address
+   * @param words
+   * @param data
+   * @return
+   * @throws Exception
+   */
+  private FINSCommandResponseFrame internalSendCommand(String type, String area, int address, int words, byte data[]) throws Exception {
+    int length = FINSTCPHeaderSendFrame.frameLength() + FINSHeaderFrame.frameLength() 
+               + FINSCommandFrame.frameLength() + (data != null ? data.length : 0);
+    _tcpHeaderFrame.setLength(length);
+    _commandFrame.prepareFrame(type, area, address, words);
     
-    // getting the actual response frame
-    int length  = ((int) header_resp[FINSFrames.FTF_LENG + 2] & 0xff) << 8;
-        length |= ((int) header_resp[FINSFrames.FTF_LENG + 3] & 0xff);
-        length -= FINSFrames.FTF_DATALENGTH;
-    byte[] response = new byte[length];
-    _client.receive(response);
+    // SENDING COMMAND
+    _client.send(_tcpHeaderFrame.getRawFrame());      // Send TCP Header
+    _client.send(_finsHeaderFrame.getRawFrame());     // Send FINS Header
+    _client.send(_commandFrame.getRawFrame());        // Send Command Frame
+    if (data != null) _client.send(data);             // Send Data (if there is any)
     
-    byte[] response_frame = new byte[length - FINSFrames.FINS_HEADER.length];
-    for (int i = 0; i < response_frame.length; i++) {
-      response_frame[i] = response[i + FINSFrames.FINS_HEADER.length];
+    // RECEIVING COMMAND
+    _client.receive(_tcpRespFrame.getRawFrame());     // Receive TCP Header
+    if (_tcpRespFrame.hasError()) {
+      Log.error("TCPFinsClient", "FINS/TCP Send Frame error! <code: " + _tcpRespFrame.getErrorCode());
+      throw new Exception("Couldn't read data.");
     }
+    _client.receive(_finsRespFrame.getRawFrame());    // Receive FINS Header
+    _commRespFrame.prepareDataBuffer(_tcpRespFrame.getDataLength());
+    _client.receive(_commRespFrame.getRawFrame());    // Receive Command Response
+    _client.receive(_commRespFrame.getDataBuffer());  // Receive Data (if it needs)
     
-    return response_frame;
+    return _commRespFrame;
   }
 
 }

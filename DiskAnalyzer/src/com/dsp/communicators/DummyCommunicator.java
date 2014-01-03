@@ -85,5 +85,11 @@ public class DummyCommunicator implements Communicator {
     // TODO Auto-generated method stub
     
   }
+
+  @Override
+  public void waitForData() throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
   
 }

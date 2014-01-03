@@ -13,7 +13,9 @@ public interface Communicator {
   
   double getWorkTolerance() throws Exception;
   
-  boolean hasData() throws Exception;
+  boolean hasData()  throws Exception;
+  
+  void waitForData() throws Exception;
 
   void notifyLoading() throws Exception;
 

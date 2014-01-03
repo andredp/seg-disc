@@ -1,15 +1,12 @@
 package com.dsp.communicators;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.dsp.analyzer.DiscRawData;
-import com.dsp.analyzer.Segment;
 import com.dsp.analyzer.SegmentedDisc;
-import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.fins.FINSClient;
-import com.dsp.communicators.fins.FINSFrames;
 import com.dsp.communicators.fins.FINS_TCPClient;
+import com.dsp.config.Configurations;
 import com.dsp.libs.Utils;
 import com.dsp.renderers.DiscRenderer;
 import com.dsp.renderers.NBConsoleRenderer;
@@ -42,10 +39,8 @@ public class NetworkCommunicator implements Communicator {
     DummyCommunicator comm = new DummyCommunicator();
     Thread.sleep(2000);
     return comm.receive();
-    /* TODO CORRIGIRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+    /* TODO CORRIGIR
     try {
-      _client.testOrConnect();
-      
       int fwords = FRONT_ADDR[1] - FRONT_ADDR[0];
       int bwords = BACK_ADDR[1]  - BACK_ADDR[0];
       ArrayList<Byte> frontBytes = _client.readAreaFromPLC(SEG_DATA_AREA, FRONT_ADDR[0], fwords);
@@ -64,12 +59,19 @@ public class NetworkCommunicator implements Communicator {
   @Override
   public boolean hasData() throws Exception {
     try {
-      _client.testOrConnect();
+      return _client.readBitFromPLC(RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
+    } catch (Exception e) {
+      Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
+      throw e;
+    }
+  }
+  
+  @Override
+  public void waitForData() throws Exception {
+    try {
       while (true) {
         boolean run_bit = _client.readBitFromPLC(RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
-        if (run_bit == true) {
-          return true;
-        }
+        if (run_bit == true) return;
         Thread.sleep(CHECK_INTERVAL);
       }
     } catch (Exception e) {
@@ -85,7 +87,6 @@ public class NetworkCommunicator implements Communicator {
   @Override
   public void notifyLoading() throws Exception {
     try {
-      _client.testOrConnect();
       _client.writeWordToPLC(STATE_LDING, STATE_AREA, STATE_ADDR);
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
@@ -97,7 +98,6 @@ public class NetworkCommunicator implements Communicator {
   @Override
   public void workDone() throws Exception {
     try {
-      _client.testOrConnect();
       _client.writeBitToPLC(false, RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not check if there's available data.", e);
@@ -112,7 +112,6 @@ public class NetworkCommunicator implements Communicator {
   @Override
   public double getWorkTolerance() throws Exception {
     try {
-      _client.testOrConnect();
       int word = _client.readWordFromPLC(WORK_TOL_AREA, WORK_TOL_ADDR);
       double tolerance = Utils.decimalIntToDouble(word, WORK_TOL_DEC_CASES) / 100.0;
       Log.info("Tolerance: " + tolerance);
@@ -127,8 +126,6 @@ public class NetworkCommunicator implements Communicator {
   @Override
   public void printResult(SegmentedDisc disc) throws Exception {
     try {
-      _client.testOrConnect();
-      
       // Print Reading Status
       if (disc.readingError()) {
         _client.writeWordToPLC(STATE_ERROR, STATE_AREA, STATE_ADDR);
@@ -157,25 +154,17 @@ public class NetworkCommunicator implements Communicator {
    * @return
    */
   private double[] parseRawBytes(ArrayList<Byte> rawBytes) {
-    double[] segData = new double[rawBytes.size() / FINSFrames.BYTES_PER_WORD];
+    double[] segData = new double[rawBytes.size() / BYTES_PER_WORD];
     for (int i = 0; i < segData.length; i++) {
-      segData[i] = dIntToDouble(rawBytes.get( i * FINSFrames.BYTES_PER_WORD), 
-                                rawBytes.get((i * FINSFrames.BYTES_PER_WORD) + 1), SEG_DATA_DEC_CASES);
+      byte highPart = rawBytes.get( i * BYTES_PER_WORD);
+      byte lowPart  = rawBytes.get((i * BYTES_PER_WORD) + 1);
+      segData[i] = Utils.dIntToDouble(highPart, lowPart, SEG_DATA_DEC_CASES);
     }
     return segData;
   }
 
-  /**
-   * 
-   * @param high_part
-   * @param low_part
-   * @return
-   */
-  private double dIntToDouble(byte high_part, byte low_part, int decimal_cases) {
-    int word = (((int)high_part & 0xff) << 8) | ((int)low_part & 0xff);
-    return Utils.decimalIntToDouble(word, decimal_cases);
-  }
   
+  private static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
   
   private static final String PLC_IP   = Configurations.getInstance().getProperty("PLC_IP");
   private static final int    PLC_PORT = Configurations.getInstance().getInt("PLC_PORT");

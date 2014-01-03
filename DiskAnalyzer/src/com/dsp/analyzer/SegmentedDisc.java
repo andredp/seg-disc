@@ -3,7 +3,7 @@ package com.dsp.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dsp.analyzer.config.Configurations;
+import com.dsp.config.Configurations;
 import com.dsp.libs.StdStats;
 import com.esotericsoftware.minlog.Log;
 

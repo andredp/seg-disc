@@ -4,9 +4,8 @@ import java.util.List;
 
 import com.dsp.analyzer.Segment;
 import com.dsp.analyzer.SegmentedDisc;
-import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.fins.FINSClient;
-import com.dsp.communicators.fins.FINSFrames;
+import com.dsp.config.Configurations;
 import com.dsp.libs.Utils;
 import com.esotericsoftware.minlog.Log;
 
@@ -21,8 +20,6 @@ public class NBConsoleRenderer implements DiscRenderer {
   @Override
   public void render(SegmentedDisc disc) throws Exception {
     try {
-      _client.testOrConnect();
-      
       // Print Errors
       printErrorSegments(disc.getFrontSegments(), F_ERROR_DISP_ADDR);
       printErrorSegments(disc.getBackSegments(),  B_ERROR_DISP_ADDR);
@@ -55,14 +52,14 @@ public class NBConsoleRenderer implements DiscRenderer {
           return;
         }
 
-        byte[] index    = FINSFrames.decToHexBytes(s.getIndex() + 1);
-        byte[] pos      = FINSFrames.decToHexBytes(s.midPosition());
-        byte[] orig_sal = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES));
-        byte[] orig_wrk = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES));
-        byte[] correct  = FINSFrames.decToHexBytes(Utils.doubleToDInt(s.correction(),          DISP_DEC_CASES));
-        
-        double fixed_work = (s.getFixedWorkload() == 0.0 ? 0.01 : s.getFixedWorkload());
-        byte[] fix_wrk  = FINSFrames.decToHexBytes(Utils.doubleToDInt(fixed_work, DISP_DEC_CASES));
+        byte[] index    = Utils.decToHexBytes(s.getIndex() + 1);
+        byte[] pos      = Utils.decToHexBytes(s.midPosition());
+        byte[] orig_sal = Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES));
+        byte[] orig_wrk = Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES));
+        byte[] correct  = Utils.decToHexBytes(Utils.doubleToDInt(s.correction(),          DISP_DEC_CASES));
+        // If the work to be displayed is 0.00 (0.001), displays 0.01 instead
+        double fixed_work = Math.max(s.getFixedWorkload(), Math.pow(10.0, -DISP_DEC_CASES));
+        byte[] fix_wrk  = Utils.decToHexBytes(Utils.doubleToDInt(fixed_work,              DISP_DEC_CASES));
         
         byte[] data = {
           index[2],    index[3],
@@ -85,9 +82,9 @@ public class NBConsoleRenderer implements DiscRenderer {
    * @throws Exception
    */
   private void printIndexes(SegmentedDisc disc) throws Exception {
-    byte[] buffer = new byte[disc.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
-      byte[] word = FINSFrames.decToHexBytes((i / FINSFrames.BYTES_PER_WORD) + 1);
+    byte[] buffer = new byte[disc.size() * BYTES_PER_WORD];
+    for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
+      byte[] word = Utils.decToHexBytes((i / BYTES_PER_WORD) + 1);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
     }
@@ -100,10 +97,10 @@ public class NBConsoleRenderer implements DiscRenderer {
    * @throws Exception
    */
   private void printMidPositions(SegmentedDisc disc) throws Exception {
-    byte[] buffer = new byte[disc.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
-      int pos = disc.getFrontSegments().get(i / FINSFrames.BYTES_PER_WORD).midPosition();
-      byte[] word = FINSFrames.decToHexBytes(pos);
+    byte[] buffer = new byte[disc.size() * BYTES_PER_WORD];
+    for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
+      int pos = disc.getFrontSegments().get(i / BYTES_PER_WORD).midPosition();
+      byte[] word = Utils.decToHexBytes(pos);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
     }
@@ -117,10 +114,10 @@ public class NBConsoleRenderer implements DiscRenderer {
    * @throws Exception
    */
   private void printOriginalSaliences(List<Segment> segments, int address) throws Exception {
-    byte[] buffer = new byte[segments.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
-      int sal = Utils.doubleToDInt(segments.get(i / FINSFrames.BYTES_PER_WORD).getOriginalSalience(), DISP_DEC_CASES);
-      byte[] word = FINSFrames.decToHexBytes(sal);
+    byte[] buffer = new byte[segments.size() * BYTES_PER_WORD];
+    for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
+      int sal = Utils.doubleToDInt(segments.get(i / BYTES_PER_WORD).getOriginalSalience(), DISP_DEC_CASES);
+      byte[] word = Utils.decToHexBytes(sal);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
     }
@@ -134,15 +131,17 @@ public class NBConsoleRenderer implements DiscRenderer {
    * @throws Exception
    */
   private void printOriginalWorkload(List<Segment> segments, int address) throws Exception {
-    byte[] buffer = new byte[segments.size() * FINSFrames.BYTES_PER_WORD];
-    for (int i = 0; i < buffer.length; i+= FINSFrames.BYTES_PER_WORD) {
-      int work = Utils.doubleToDInt(segments.get(i / FINSFrames.BYTES_PER_WORD).getOriginalWorkload(), DISP_DEC_CASES);
-      byte[] word = FINSFrames.decToHexBytes(work);
+    byte[] buffer = new byte[segments.size() * BYTES_PER_WORD];
+    for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
+      int work = Utils.doubleToDInt(segments.get(i / BYTES_PER_WORD).getOriginalWorkload(), DISP_DEC_CASES);
+      byte[] word = Utils.decToHexBytes(work);
       buffer[i]     = word[2];
       buffer[i + 1] = word[3];
     }
     _client.writeAreaToPLC(buffer, PRINT_AREA, address);
   }
+  
+  protected static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
   
   // State
   protected static final String STATE_AREA     = Configurations.getInstance().getProperty("STATE_AREA");

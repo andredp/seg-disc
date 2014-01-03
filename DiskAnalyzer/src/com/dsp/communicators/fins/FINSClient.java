@@ -2,49 +2,46 @@ package com.dsp.communicators.fins;
 
 import java.util.ArrayList;
 
-import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.exceptions.TooManyBadPacketsException;
+import com.dsp.communicators.fins.frames.FINSCommandResponseFrame;
+import com.dsp.config.Configurations;
 
 public abstract class FINSClient {
   
-  protected static final int MAXBADPACKETS = Configurations.getInstance().getInt("PLC_MAXBADPACKETS");
-  protected static final int READCHUNK     = Configurations.getInstance().getInt("PLC_READCHUNK");
-  protected static final int WRITECHUNK    = Configurations.getInstance().getInt("PLC_WRITECHUNK");
+  protected static final int MAXBADPACKETS  = Configurations.getInstance().getInt("PLC_MAXBADPACKETS");
+  protected static final int READCHUNK      = Configurations.getInstance().getInt("PLC_READCHUNK");
+  protected static final int WRITECHUNK     = Configurations.getInstance().getInt("PLC_WRITECHUNK");
+  protected static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
   
-  public abstract void testOrConnect()    throws Exception;
+  public abstract void connect()    throws Exception;
   public abstract void disconnect() throws Exception;
   
-  protected abstract byte[] getReadResponseFrame(String area, int address, int words) throws Exception;
-  protected abstract byte[] getWriteResponseFrame(byte[] data, String area, int address) throws Exception;
+  protected abstract FINSCommandResponseFrame sendCommand(String type, String area, int address, int words)              throws Exception;
+  protected abstract FINSCommandResponseFrame sendCommand(String type, String area, int address, int words, byte[] data) throws Exception;
   
-  // Reads
   /**
    * 
    * @param area
-   * @param offset
+   * @param address
    * @param numWords
    * @return
    * @throws Exception
    */
-  public ArrayList<Byte> readAreaFromPLC(String area, int offset, int numWords) throws Exception {
+  public ArrayList<Byte> readAreaFromPLC(String area, int address, int numWords) throws Exception {
     int read   = 0;
     int errors = 0;
     ArrayList<Byte> data = new ArrayList<Byte>();
     
     while (read < numWords) {
       int toread = Math.min(READCHUNK, numWords - read);
-      
-      byte[] response = getReadResponseFrame(area, offset + read, toread);
-      
-      // Data parsing
-      if (FINSFrames.responseFrameOK(response)) {
+      FINSCommandResponseFrame response = sendCommand("area_read", area, address + read, toread);
+      if (!response.hasError()) {
         // adds the words to the data buffer
-        for (int i = FINSFrames.FR_HEADER_SIZE; i < response.length; i++) {
-          data.add(response[i]);
+        for (byte b : response.getDataBuffer()) {
+          data.add(b);
         }
         read += toread;
         errors = 0;
-        // In case the end code is not OK, tries again until a certain number of tries
       } else if (errors++ >= MAXBADPACKETS) {
         throw new TooManyBadPacketsException();
       }
@@ -79,9 +76,14 @@ public abstract class FINSClient {
     return ((int) data.get(0) & 0xff) << 8 | ((int) data.get(1) & 0xff);
   }
   
-  // Writes
+  /**
+   * 
+   * @param data
+   * @param area
+   * @param address
+   * @throws Exception
+   */
   public void writeAreaToPLC(byte[] data, String area, int address) throws Exception {
-    final int BYTES_PER_WORD = 2;
     int written = 0; // words
     int errors  = 0;
     
@@ -89,18 +91,15 @@ public abstract class FINSClient {
     while (written < total) {
       int towrite = Math.min(WRITECHUNK, total - written);
       
-      byte[] data_to_write = new byte[towrite * BYTES_PER_WORD];
-      for (int i = 0; i < data_to_write.length; i++) {
-        data_to_write[i] = data[(written * BYTES_PER_WORD) + i];
+      byte[] dataToSend = new byte[towrite * BYTES_PER_WORD];
+      for (int i = 0; i < dataToSend.length; i++) {
+        dataToSend[i] = data[(written * BYTES_PER_WORD) + i];
       }
       
-      byte[] response = getWriteResponseFrame(data_to_write, area, address + written);
-      
-      // Data parsing
-      if (FINSFrames.responseFrameOK(response)) {
+      FINSCommandResponseFrame response = sendCommand("area_write", area, address + written, towrite, dataToSend);
+      if (!response.hasError()) {
         written += towrite;
         errors = 0;
-        // In case the end code is not OK, tries again until a certain number of tries
       } else if (errors++ >= MAXBADPACKETS) {
         throw new TooManyBadPacketsException();
       }

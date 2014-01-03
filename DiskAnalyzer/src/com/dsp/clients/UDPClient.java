@@ -7,8 +7,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.exceptions.UDPRetriesExceededException;
+import com.dsp.config.Configurations;
 import com.esotericsoftware.minlog.Log;
 
 public class UDPClient implements Client {
@@ -87,12 +87,6 @@ public class UDPClient implements Client {
   @Override
   public void close() {
     _socket.close();
-  }
-
-  @Override
-  public boolean ping() {
-    // TODO
-    return false;
   }
 
 }

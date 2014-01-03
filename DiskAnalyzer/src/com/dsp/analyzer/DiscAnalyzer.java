@@ -1,8 +1,8 @@
 package com.dsp.analyzer;
 
-import com.dsp.analyzer.config.Configurations;
 import com.dsp.communicators.Communicator;
 import com.dsp.communicators.NetworkCommunicator;
+import com.dsp.config.Configurations;
 import com.esotericsoftware.minlog.Log;
 
 public class DiscAnalyzer {
@@ -18,7 +18,7 @@ public class DiscAnalyzer {
     
       while (true) {
         Log.info("Waiting for available data.");
-        if (!plc.hasData()) return; // it is blocked here on the Network communicator
+        plc.waitForData();
         Log.info("Fetching data.");
         plc.notifyLoading();
         
