@@ -3,7 +3,7 @@ package com.dsp.network.fins.clients;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 
 
-public class FINS_UDPClient extends FINSClient {
+public class FINSUDPClient extends FINSClient {
   
   @Override
   public void connect() throws Exception {

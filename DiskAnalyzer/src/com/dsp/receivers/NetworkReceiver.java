@@ -6,7 +6,7 @@ import com.dsp.analyzer.DiscRawData;
 import com.dsp.config.Configurations;
 import com.dsp.libs.Utils;
 import com.dsp.network.fins.clients.FINSClient;
-import com.dsp.network.fins.clients.FINS_TCPClient;
+import com.dsp.network.fins.clients.FINSTCPClient;
 import com.esotericsoftware.minlog.Log;
 
 public class NetworkReceiver implements Receiver {
@@ -27,7 +27,7 @@ public class NetworkReceiver implements Receiver {
    */
   public NetworkReceiver() throws Exception {
     try {
-      _client = new FINS_TCPClient(PLC_IP, PLC_PORT);
+      _client = new FINSTCPClient(PLC_IP, PLC_PORT);
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not receive the data.", e);
       throw e;

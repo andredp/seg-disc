@@ -11,7 +11,7 @@ import com.dsp.network.fins.frames.FINSTCPHeaderConnectionFrame;
 import com.dsp.network.fins.frames.FINSTCPHeaderSendFrame;
 import com.esotericsoftware.minlog.Log;
 
-public class FINS_TCPClient extends FINSClient {
+public class FINSTCPClient extends FINSClient {
 
   private TCPClient _client;
   private String    _host;
@@ -28,7 +28,7 @@ public class FINS_TCPClient extends FINSClient {
   private FINSHeaderFrame          _finsRespFrame = new FINSHeaderFrame();
   private FINSCommandResponseFrame _commRespFrame = new FINSCommandResponseFrame();
   
-  public FINS_TCPClient(String host, int port) throws Exception {
+  public FINSTCPClient(String host, int port) throws Exception {
     _host = host;
     _port = port;
     _client = new TCPClient(_host, _port);

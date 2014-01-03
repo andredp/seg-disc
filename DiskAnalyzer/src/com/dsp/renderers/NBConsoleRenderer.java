@@ -7,7 +7,7 @@ import com.dsp.analyzer.SegmentedDisc;
 import com.dsp.config.Configurations;
 import com.dsp.libs.Utils;
 import com.dsp.network.fins.clients.FINSClient;
-import com.dsp.network.fins.clients.FINS_TCPClient;
+import com.dsp.network.fins.clients.FINSTCPClient;
 import com.esotericsoftware.minlog.Log;
 
 public class NBConsoleRenderer implements DiscRenderer {
@@ -20,7 +20,7 @@ public class NBConsoleRenderer implements DiscRenderer {
   
   public NBConsoleRenderer() throws Exception {
     try {
-      _client = new FINS_TCPClient(PLC_IP, PLC_PORT);
+      _client = new FINSTCPClient(PLC_IP, PLC_PORT);
     } catch (Exception e) {
       Log.error("NBConsoleRenderer", "Could not initialize the client.", e);
       throw e;
