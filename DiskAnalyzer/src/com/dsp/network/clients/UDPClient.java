@@ -1,4 +1,4 @@
-package com.dsp.clients;
+package com.dsp.network.clients;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -7,8 +7,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import com.dsp.communicators.exceptions.UDPRetriesExceededException;
 import com.dsp.config.Configurations;
+import com.dsp.network.exceptions.UDPRetriesExceededException;
 import com.esotericsoftware.minlog.Log;
 
 public class UDPClient implements Client {

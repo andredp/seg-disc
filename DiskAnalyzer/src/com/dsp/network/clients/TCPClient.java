@@ -1,4 +1,4 @@
-package com.dsp.clients;
+package com.dsp.network.clients;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

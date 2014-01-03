@@ -1,6 +1,6 @@
-package com.dsp.communicators.fins;
+package com.dsp.network.fins.clients;
 
-import com.dsp.communicators.fins.frames.FINSCommandResponseFrame;
+import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 
 
 public class FINS_UDPClient extends FINSClient {

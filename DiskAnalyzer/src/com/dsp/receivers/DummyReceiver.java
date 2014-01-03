@@ -1,9 +1,8 @@
-package com.dsp.communicators;
+package com.dsp.receivers;
 
 import com.dsp.analyzer.DiscRawData;
-import com.dsp.analyzer.SegmentedDisc;
 
-public class DummyCommunicator implements Communicator {
+public class DummyReceiver implements Receiver {
 
   private static final double[] VALUE_RANGE = { 0.0, 2.0 };
 
@@ -64,32 +63,19 @@ public class DummyCommunicator implements Communicator {
   }
 
   @Override
-  public void notifyLoading() throws Exception {
-    // TODO Auto-generated method stub
-    
+  public void waitForData() throws Exception {
+    if (_hasData) return;
+    throw new Exception("Data already received.");
   }
 
   @Override
-  public void workDone() throws Exception {
+  public void signalWorkComplete() throws Exception {
     _hasData = false;
   }
 
   @Override
-  public void printResult(SegmentedDisc disc) throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void disconnect() throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void waitForData() throws Exception {
-    // TODO Auto-generated method stub
-    
+  public void disconnect() {
+    // do nothing
   }
   
 }

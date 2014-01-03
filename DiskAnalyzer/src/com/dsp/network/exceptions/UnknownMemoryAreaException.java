@@ -1,4 +1,4 @@
-package com.dsp.communicators.exceptions;
+package com.dsp.network.exceptions;
 
 public class UnknownMemoryAreaException extends Exception {
   

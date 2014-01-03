@@ -1,4 +1,4 @@
-package com.dsp.communicators.fins.frames;
+package com.dsp.network.fins.frames;
 
 import com.dsp.libs.Utils;
 

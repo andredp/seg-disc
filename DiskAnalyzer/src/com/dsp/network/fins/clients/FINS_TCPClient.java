@@ -1,14 +1,14 @@
-package com.dsp.communicators.fins;
+package com.dsp.network.fins.clients;
 
 import java.io.IOException;
 
-import com.dsp.clients.TCPClient;
-import com.dsp.communicators.fins.frames.FINSCommandFrame;
-import com.dsp.communicators.fins.frames.FINSCommandResponseFrame;
-import com.dsp.communicators.fins.frames.FINSHeaderFrame;
-import com.dsp.communicators.fins.frames.FINSTCPHeaderConnResponseFrame;
-import com.dsp.communicators.fins.frames.FINSTCPHeaderConnectionFrame;
-import com.dsp.communicators.fins.frames.FINSTCPHeaderSendFrame;
+import com.dsp.network.clients.TCPClient;
+import com.dsp.network.fins.frames.FINSCommandFrame;
+import com.dsp.network.fins.frames.FINSCommandResponseFrame;
+import com.dsp.network.fins.frames.FINSHeaderFrame;
+import com.dsp.network.fins.frames.FINSTCPHeaderConnResponseFrame;
+import com.dsp.network.fins.frames.FINSTCPHeaderConnectionFrame;
+import com.dsp.network.fins.frames.FINSTCPHeaderSendFrame;
 import com.esotericsoftware.minlog.Log;
 
 public class FINS_TCPClient extends FINSClient {

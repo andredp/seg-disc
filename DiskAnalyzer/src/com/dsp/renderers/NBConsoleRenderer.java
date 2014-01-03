@@ -4,9 +4,10 @@ import java.util.List;
 
 import com.dsp.analyzer.Segment;
 import com.dsp.analyzer.SegmentedDisc;
-import com.dsp.communicators.fins.FINSClient;
 import com.dsp.config.Configurations;
 import com.dsp.libs.Utils;
+import com.dsp.network.fins.clients.FINSClient;
+import com.dsp.network.fins.clients.FINS_TCPClient;
 import com.esotericsoftware.minlog.Log;
 
 public class NBConsoleRenderer implements DiscRenderer {
@@ -16,13 +17,35 @@ public class NBConsoleRenderer implements DiscRenderer {
   public NBConsoleRenderer(FINSClient client) {
     _client = client;
   }
-
+  
+  public NBConsoleRenderer() throws Exception {
+    try {
+      _client = new FINS_TCPClient(PLC_IP, PLC_PORT);
+    } catch (Exception e) {
+      Log.error("NBConsoleRenderer", "Could not initialize the client.", e);
+      throw e;
+    }
+  }
+  
+  /**
+   * 
+   */
   @Override
   public void render(SegmentedDisc disc) throws Exception {
     try {
+      // Print Reading Status
+      if (disc.readingError()) {
+        _client.writeWordToPLC(STATE_ERROR, STATE_AREA, STATE_ADDR);
+        return;
+      }
+      // Print Disc Status
+      int state = (disc.isBrokenDisc() ? STATE_NOK : STATE_OK);
+      _client.writeWordToPLC(state, STATE_AREA, STATE_ADDR);
+      
       // Print Errors
       printErrorSegments(disc.getFrontSegments(), F_ERROR_DISP_ADDR);
       printErrorSegments(disc.getBackSegments(),  B_ERROR_DISP_ADDR);
+      // Print all data
       printIndexes(disc);
       printMidPositions(disc);
       printOriginalSaliences(disc.getFrontSegments(), P_FSAL_ADDR);
@@ -48,26 +71,32 @@ public class NBConsoleRenderer implements DiscRenderer {
       if (s.isBroken()) {
         if (++errors > MAX_ERRORS_DISP) {
           _client.writeWordToPLC(STATE_MORE_ERR, STATE_AREA, STATE_ADDR);
-          Log.warn("Too many errors!");
+          Log.info("NBConsoleRenderer", "Too many errors to display.");
           return;
         }
 
-        byte[] index    = Utils.decToHexBytes(s.getIndex() + 1);
-        byte[] pos      = Utils.decToHexBytes(s.midPosition());
-        byte[] orig_sal = Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES));
-        byte[] orig_wrk = Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES));
-        byte[] correct  = Utils.decToHexBytes(Utils.doubleToDInt(s.correction(),          DISP_DEC_CASES));
         // If the work to be displayed is 0.00 (0.001), displays 0.01 instead
         double fixed_work = Math.max(s.getFixedWorkload(), Math.pow(10.0, -DISP_DEC_CASES));
-        byte[] fix_wrk  = Utils.decToHexBytes(Utils.doubleToDInt(fixed_work,              DISP_DEC_CASES));
-        
+
         byte[] data = {
-          index[2],    index[3],
-          pos[2],      pos[3],
-          orig_sal[2], orig_sal[3],
-          orig_wrk[2], orig_wrk[3],
-          correct[2],  correct[3],
-          fix_wrk[2],  fix_wrk[3],
+          // index
+          Utils.decToHexBytes(s.getIndex() + 1, 2), 
+          Utils.decToHexBytes(s.getIndex() + 1, 3),
+          // middle position
+          Utils.decToHexBytes(s.midPosition(), 2),
+          Utils.decToHexBytes(s.midPosition(), 3),
+          // original salience
+          Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES), 2),
+          Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalSalience(), DISP_DEC_CASES), 3),
+          // original work
+          Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES), 2),
+          Utils.decToHexBytes(Utils.doubleToDInt(s.getOriginalWorkload(), DISP_DEC_CASES), 3),
+          // correction
+          Utils.decToHexBytes(Utils.doubleToDInt(s.correction(), DISP_DEC_CASES), 2),
+          Utils.decToHexBytes(Utils.doubleToDInt(s.correction(), DISP_DEC_CASES), 3),
+          // fixed workload
+          Utils.decToHexBytes(Utils.doubleToDInt(fixed_work, DISP_DEC_CASES), 2),
+          Utils.decToHexBytes(Utils.doubleToDInt(fixed_work, DISP_DEC_CASES), 3)
         };
         
         _client.writeAreaToPLC(data, ERROR_DISP_AREA, address);
@@ -84,9 +113,9 @@ public class NBConsoleRenderer implements DiscRenderer {
   private void printIndexes(SegmentedDisc disc) throws Exception {
     byte[] buffer = new byte[disc.size() * BYTES_PER_WORD];
     for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
-      byte[] word = Utils.decToHexBytes((i / BYTES_PER_WORD) + 1);
-      buffer[i]     = word[2];
-      buffer[i + 1] = word[3];
+      int index = disc.getFrontSegments().get(i / BYTES_PER_WORD).getIndex() + 1;
+      buffer[i]     = Utils.decToHexBytes(index, 2);
+      buffer[i + 1] = Utils.decToHexBytes(index, 3);
     }
     _client.writeAreaToPLC(buffer, PRINT_AREA, P_INDEX_ADDR);
   }
@@ -100,9 +129,8 @@ public class NBConsoleRenderer implements DiscRenderer {
     byte[] buffer = new byte[disc.size() * BYTES_PER_WORD];
     for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
       int pos = disc.getFrontSegments().get(i / BYTES_PER_WORD).midPosition();
-      byte[] word = Utils.decToHexBytes(pos);
-      buffer[i]     = word[2];
-      buffer[i + 1] = word[3];
+      buffer[i]     = Utils.decToHexBytes(pos, 2);
+      buffer[i + 1] = Utils.decToHexBytes(pos, 3);
     }
     _client.writeAreaToPLC(buffer, PRINT_AREA, P_MIDPOS_ADDR);
   }
@@ -117,9 +145,8 @@ public class NBConsoleRenderer implements DiscRenderer {
     byte[] buffer = new byte[segments.size() * BYTES_PER_WORD];
     for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
       int sal = Utils.doubleToDInt(segments.get(i / BYTES_PER_WORD).getOriginalSalience(), DISP_DEC_CASES);
-      byte[] word = Utils.decToHexBytes(sal);
-      buffer[i]     = word[2];
-      buffer[i + 1] = word[3];
+      buffer[i]     = Utils.decToHexBytes(sal, 2);
+      buffer[i + 1] = Utils.decToHexBytes(sal, 3);
     }
     _client.writeAreaToPLC(buffer, PRINT_AREA, address);
   }
@@ -134,20 +161,46 @@ public class NBConsoleRenderer implements DiscRenderer {
     byte[] buffer = new byte[segments.size() * BYTES_PER_WORD];
     for (int i = 0; i < buffer.length; i+= BYTES_PER_WORD) {
       int work = Utils.doubleToDInt(segments.get(i / BYTES_PER_WORD).getOriginalWorkload(), DISP_DEC_CASES);
-      byte[] word = Utils.decToHexBytes(work);
-      buffer[i]     = word[2];
-      buffer[i + 1] = word[3];
+      buffer[i]     = Utils.decToHexBytes(work, 2);
+      buffer[i + 1] = Utils.decToHexBytes(work, 3);
     }
     _client.writeAreaToPLC(buffer, PRINT_AREA, address);
   }
   
-  protected static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
+  /**
+   * 
+   */
+  @Override
+  public void notifyLoading() throws Exception {
+    try {
+      _client.writeWordToPLC(STATE_LDING, STATE_AREA, STATE_ADDR);
+    } catch (Exception e) {
+      Log.error("NetworkDataReceiver", "Could not notity loading.", e);
+      throw e;
+    }
+  }
+  
+  
+  @Override
+  public void notifyWorkComplete() throws Exception {
+    // EMPTY
+  }
+  
+  // ===== CONSTANTS
+  private static final int    PLC_PORT = Configurations.getInstance().getInt("PLC_PORT");
+  private static final String PLC_IP   = Configurations.getInstance().getProperty("PLC_IP");
+  
+  private static final int    BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
   
   // State
-  protected static final String STATE_AREA     = Configurations.getInstance().getProperty("STATE_AREA");
-  protected static final int    STATE_ADDR     = Configurations.getInstance().getInt("STATE_ADDR");
-  protected static final int    STATE_MORE_ERR = Configurations.getInstance().getInt("STATE_MORE_ERR");
-
+  private static final String STATE_AREA     = Configurations.getInstance().getProperty("STATE_AREA");
+  private static final int    STATE_ADDR     = Configurations.getInstance().getInt("STATE_ADDR");
+  private static final int    STATE_OK       = Configurations.getInstance().getInt("STATE_OK");
+  private static final int    STATE_NOK      = Configurations.getInstance().getInt("STATE_NOK");
+  private static final int    STATE_LDING    = Configurations.getInstance().getInt("STATE_LDING");
+  private static final int    STATE_ERROR    = Configurations.getInstance().getInt("STATE_ERROR");
+  private static final int    STATE_MORE_ERR = Configurations.getInstance().getInt("STATE_MORE_ERR");
+  
   // Print Info
   protected static final int DISP_DEC_CASES   = Configurations.getInstance().getInt("DISP_DEC_CASES");
   
@@ -165,5 +218,14 @@ public class NBConsoleRenderer implements DiscRenderer {
   protected static final int    B_ERROR_DISP_ADDR = Configurations.getInstance().getInt("B_ERROR_DISP_ADDR");
   protected static final int    MAX_ERRORS_DISP   = Configurations.getInstance().getInt("MAX_ERRORS_DISP");
   protected static final int    ERROR_DISP_STEP   = Configurations.getInstance().getInt("ERROR_DISP_STEP");
+
+  @Override
+  public void disconnect() {
+   try {
+     _client.disconnect();
+    } catch (Exception e) {
+      Log.warn("NBConsoleRenderer", "Exception thrown while disconnecting.", e);
+    }
+  }
   
 }

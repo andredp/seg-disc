@@ -4,6 +4,9 @@ import com.dsp.analyzer.SegmentedDisc;
 
 public interface DiscRenderer {
   
-  public abstract void render(SegmentedDisc disc) throws Exception;
+  void notifyLoading()            throws Exception;
+  void render(SegmentedDisc disc) throws Exception;
+  void notifyWorkComplete()       throws Exception;
+  void disconnect();
   
 }

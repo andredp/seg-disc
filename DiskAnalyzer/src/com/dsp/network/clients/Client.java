@@ -1,4 +1,4 @@
-package com.dsp.clients;
+package com.dsp.network.clients;
 
 public interface Client {
   

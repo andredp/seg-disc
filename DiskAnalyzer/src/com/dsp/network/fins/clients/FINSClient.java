@@ -1,10 +1,10 @@
-package com.dsp.communicators.fins;
+package com.dsp.network.fins.clients;
 
 import java.util.ArrayList;
 
-import com.dsp.communicators.exceptions.TooManyBadPacketsException;
-import com.dsp.communicators.fins.frames.FINSCommandResponseFrame;
 import com.dsp.config.Configurations;
+import com.dsp.network.exceptions.TooManyBadPacketsException;
+import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 
 public abstract class FINSClient {
   

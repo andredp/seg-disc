@@ -1,4 +1,4 @@
-package com.dsp.clients;
+package com.dsp.network.clients;
 
 public class DebugClient implements Client {
 

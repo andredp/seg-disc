@@ -1,34 +1,45 @@
 package com.dsp.analyzer;
 
-import com.dsp.communicators.Communicator;
-import com.dsp.communicators.NetworkCommunicator;
 import com.dsp.config.Configurations;
+import com.dsp.receivers.NetworkReceiver;
+import com.dsp.receivers.Receiver;
+import com.dsp.renderers.DiscRenderer;
+import com.dsp.renderers.NBConsoleRenderer;
 import com.esotericsoftware.minlog.Log;
 
 public class DiscAnalyzer {
-
-  public static void main(String[] args) throws Exception {
-    Communicator plc = null;
+  
+  private Receiver     _plc;
+  private DiscRenderer _console;
+  
+  void startAnalyzing() {
     try {
       // Initialization
       Configurations.getInstance().load("config.dat");
       Log.DEBUG(); // debug level
       
-      plc = new NetworkCommunicator();
-    
+      _plc     = new NetworkReceiver();
+      _console = new NBConsoleRenderer();
+      
       while (true) {
         Log.info("Waiting for available data.");
-        plc.waitForData();
-        Log.info("Fetching data.");
-        plc.notifyLoading();
-        
-        double workTolerance = plc.getWorkTolerance();
-        DiscRawData data     = plc.receive();
-        SegmentedDisc disc   = new SegmentedDisc(data, workTolerance);
-        
-        Log.info("\n" + disc);
-        plc.printResult(disc);
-        plc.workDone();
+        _plc.waitForData();
+        Log.info("Preparing to receive the disc data...");
+        _console.notifyLoading();
+        Log.info("Reading the Work Tolerance value.");
+        double workTolerance = _plc.getWorkTolerance();        
+        Log.info("Work Tolerance: " + workTolerance * 100.0 + "%");
+        Log.info("Receiving data...");
+        DiscRawData data   = _plc.receive();
+        Log.info("Download complete.");
+        SegmentedDisc disc = new SegmentedDisc(data, workTolerance);
+        Log.info("Calculations complete.");
+        Log.debug("\n" + disc);
+        Log.info("Writing results to the output.");
+        _console.render(disc);
+        Log.info("Signaling the PLC that the work is done so another test can take place.");
+        _plc.signalWorkComplete();
+        _console.notifyWorkComplete();
         Log.info("Work done.");
       }
       
@@ -36,8 +47,18 @@ public class DiscAnalyzer {
       e.printStackTrace();
       return;
     } finally {
-      plc.disconnect();
+      _plc.disconnect();
+      _console.disconnect();
     }
+  }
+
+  /**
+   * Starting point
+   * @param args
+   * @throws Exception
+   */
+  public static void main(String[] args) throws Exception {
+    new DiscAnalyzer().startAnalyzing();
   }
   
 }

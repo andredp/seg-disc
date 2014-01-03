@@ -1,8 +1,8 @@
-package com.dsp.communicators.fins.frames;
+package com.dsp.network.fins.frames;
 
-import com.dsp.communicators.exceptions.UnknownCommandTypeException;
-import com.dsp.communicators.exceptions.UnknownMemoryAreaException;
 import com.dsp.libs.Utils;
+import com.dsp.network.exceptions.UnknownCommandTypeException;
+import com.dsp.network.exceptions.UnknownMemoryAreaException;
 
 public class FINSCommandFrame extends FINSFrame {
 
