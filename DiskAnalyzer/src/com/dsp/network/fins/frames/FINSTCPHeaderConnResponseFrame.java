@@ -4,15 +4,15 @@ public class FINSTCPHeaderConnResponseFrame extends FINSFrame {
 
   private static final byte[] TEMPLATE = new byte[] {
     (byte) 'F',  (byte) 'I',  (byte) 'N',  (byte) 'S',
-    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x0C, // Length
+    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Length
     (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Command
-    (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, // Error Code
+    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Error Code
     (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Client node
     (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Server node
   };
   
   public FINSTCPHeaderConnResponseFrame() {
-    super(new byte[TEMPLATE.length]);
+    super(TEMPLATE.clone());
   }
   
   public byte getClientNode() { return _frame[CLIN_3]; }
@@ -20,7 +20,7 @@ public class FINSTCPHeaderConnResponseFrame extends FINSFrame {
   public byte getErrorCode()  { return _frame[ERRC_3]; }
   
   public boolean hasError() {
-    return (_frame[ERRC_2] << 8 | _frame[ERRC_3]) != 0;
+    return ((_frame[ERRC_2] << 8) | _frame[ERRC_3]) != 0;
   }
   
   public static int frameLength() {

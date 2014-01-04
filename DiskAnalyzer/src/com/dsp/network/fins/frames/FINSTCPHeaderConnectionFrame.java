@@ -16,8 +16,8 @@ public class FINSTCPHeaderConnectionFrame extends FINSFrame {
     super(TEMPLATE.clone());
   }
   
-  public void setClientNode(byte node) { _frame[CLI_N] = node; }
-  public byte getClientNode()          { return _frame[CLI_N]; }
+  public void setClientNode(byte node) { _frame[CLIN_3] = node; }
+  public byte getClientNode()          { return _frame[CLIN_3]; }
   
   public void setLength(int length) {
     byte[] hex_length  = Utils.decToHexBytes(length);
@@ -32,18 +32,22 @@ public class FINSTCPHeaderConnectionFrame extends FINSFrame {
   }
   
   // frame indexes
-                              private static final int LNGT_0 = 4;
-                              private static final int LNGT_1 = 5;
-                              private static final int LNGT_2 = 6;
-                              private static final int LNGT_3 = 7;
-                              private static final int COMM_0 = 8;
-  @SuppressWarnings("unused") private static final int COMM_1 = 9;
-  @SuppressWarnings("unused") private static final int COMM_2 = 10;
-  @SuppressWarnings("unused") private static final int COMM_3 = 11;
-  @SuppressWarnings("unused") private static final int ERRC_0 = 12;
-  @SuppressWarnings("unused") private static final int ERRC_1 = 13;
-  @SuppressWarnings("unused") private static final int ERRC_2 = 14;
-  @SuppressWarnings("unused") private static final int ERRC_3 = 15;
-                              private static final int CLI_N  = 16;
+  private static final int LNGT_0 = 4;
+  private static final int LNGT_1 = 5;
+  private static final int LNGT_2 = 6;
+  private static final int LNGT_3 = 7;
+  private static final int COMM_0 = 8;
+//private static final int COMM_1 = 9;
+//private static final int COMM_2 = 10;
+//private static final int COMM_3 = 11;
+//private static final int ERRC_0 = 12;
+//private static final int ERRC_1 = 13;
+//private static final int ERRC_2 = 14;
+//private static final int ERRC_3 = 15;
+//private static final int CLIN_0  = 16;
+//private static final int CLIN_1  = 17;
+//private static final int CLIN_2  = 18;
+  private static final int CLIN_3  = 19;
+  
 
 }
