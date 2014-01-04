@@ -129,18 +129,18 @@ public class FINSTCPClient extends FINSClient {
     _command.prepareFrame(type, area, address, words);
     
     // SENDING COMMAND
-    _client.send(_tcpHeader.getRawFrame());      // Send TCP Header
-    _client.send(_finsHeader.getRawFrame());     // Send FINS Header
-    _client.send(_command.getRawFrame());        // Send Command Frame
-    if (data != null) _client.send(data);             // Send Data (if there is any)
+    _client.send(_tcpHeader.getRawFrame());         // Send TCP Header
+    _client.send(_finsHeader.getRawFrame());        // Send FINS Header
+    _client.send(_command.getRawFrame());           // Send Command Frame
+    if (data != null) _client.send(data);           // Send Data (if there is any)
     
     // RECEIVING COMMAND
-    _client.receive(_tcpHeaderResp.getRawFrame());     // Receive TCP Header
+    _client.receive(_tcpHeaderResp.getRawFrame());  // Receive TCP Header
     if (_tcpHeaderResp.hasError()) {
       Log.error("TCPFinsClient", "FINS/TCP Send Frame error! <code: " + _tcpHeaderResp.getErrorCode());
       throw new Exception("Couldn't read data.");
     }
-    _client.receive(_finsHeaderResp.getRawFrame());    // Receive FINS Header
+    _client.receive(_finsHeaderResp.getRawFrame()); // Receive FINS Header
     _client.receive(_commandResp.getRawFrame());    // Receive Command Response
     _commandResp.prepareDataBuffer(_tcpHeaderResp.getDataLength());
     _client.receive(_commandResp.getDataBuffer());  // Receive Data (if it needs)
