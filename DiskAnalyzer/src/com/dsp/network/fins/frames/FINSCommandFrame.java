@@ -21,14 +21,14 @@ public class FINSCommandFrame extends FINSFrame {
   }
   
   public void setMemArea(String area) throws UnknownMemoryAreaException {
-    if (area.equalsIgnoreCase("D")) { _frame[AREA] = (byte) 0x82; }
+    if (area.equalsIgnoreCase("D")) { _frame[AREA] = (byte) 0x82; return; }
     // enter other areas...
     throw new UnknownMemoryAreaException(area);
   }
   
   public void setCommandCode(String type) throws UnknownCommandTypeException {
-    if (type.equalsIgnoreCase("area_read"))  { _frame[COMM_0] = (byte) 0x01; _frame[COMM_1] = (byte) 0x01; }
-    if (type.equalsIgnoreCase("area_write")) { _frame[COMM_0] = (byte) 0x01; _frame[COMM_1] = (byte) 0x02; }
+    if (type.equalsIgnoreCase("area_read"))  { _frame[COMM_0] = (byte) 0x01; _frame[COMM_1] = (byte) 0x01; return; }
+    if (type.equalsIgnoreCase("area_write")) { _frame[COMM_0] = (byte) 0x01; _frame[COMM_1] = (byte) 0x02; return; }
     // enter other commands...
     throw new UnknownCommandTypeException(type);
   }

@@ -21,6 +21,7 @@ public class NBConsoleRenderer implements DiscRenderer {
   public NBConsoleRenderer() throws Exception {
     try {
       _client = new FINSTCPClient(PLC_IP, PLC_PORT);
+      _client.connect();
     } catch (Exception e) {
       Log.error("NBConsoleRenderer", "Could not initialize the client.", e);
       throw e;
