@@ -6,53 +6,55 @@ public class FINSTCPHeaderSendFrame extends FINSFrame {
   
   private static final byte[] TEMPLATE = new byte[] {
     (byte) 'F',  (byte) 'I',  (byte) 'N',  (byte) 'S',
-    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Length
+    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x16, // Length (0x14 to 0x7E4)
     (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02, // Command
-    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00  // Error Code
+    (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00  // Error Code (not used)
   };
   
   public FINSTCPHeaderSendFrame() {
     super(TEMPLATE.clone());
   }
   
-  public byte getErrorCode() { return _frame[ERRC_3]; }
+  public byte getErrorCode() { return _frame[ERRC]; }
 
   public void setLength(int length) {
-    byte[] hex_length  = Utils.decToHexBytes(length);
-    _frame[LNGT_0] = hex_length[0];
-    _frame[LNGT_1] = hex_length[1];
-    _frame[LNGT_2] = hex_length[2];
-    _frame[LNGT_3] = hex_length[3];
+    _frame[LNGT_H] = Utils.decToHexBytes(length, 2);
+    _frame[LNGT_L] = Utils.decToHexBytes(length, 3);
   }
   
+  /**
+   * 
+   * @return the length of the raw data (excluding the frames) that the PLC sent
+   */
   public int getDataLength() {
-    int length = (((int) _frame[LNGT_2] & 0xff) << 8) | ((int) _frame[LNGT_3] & 0xff);
-    length -= (FINSTCPHeaderSendFrame.frameLength() + 
-               FINSHeaderFrame.frameLength() +
-               FINSCommandResponseFrame.frameLength());
+    int length = Utils.bytesToInt(_frame[LNGT_H], _frame[LNGT_L]);
+    length -= (FINSTCPHeaderSendFrame.frameLength() + FINSHeaderFrame.frameLength() 
+        + FINSCommandResponseFrame.frameLength());
     return length;
   }
   
   public boolean hasError() {
-    return (_frame[ERRC_2] << 8 | _frame[ERRC_3]) != 0;
+    return _frame[COMM] != (byte) 0x06; // (0x06 is a connection confirmation command)
   }
 
   public static int frameLength() {
-    // length from command field to the end
-    return TEMPLATE.length - COMM_0; 
+    return 8; // length from command field to the end
   }
   
-  private static final int LNGT_0 = 4;
-  private static final int LNGT_1 = 5;
-  private static final int LNGT_2 = 6;
-  private static final int LNGT_3 = 7;
-  private static final int COMM_0 = 8;
-//private static final int COMM_1 = 9;
-//private static final int COMM_2 = 10;
-//private static final int COMM_3 = 11;
-//private static final int ERRC_0 = 12;
-//private static final int ERRC_1 = 13;
-  private static final int ERRC_2 = 14;
-  private static final int ERRC_3 = 15;
+  public String getErrorMessage() throws Exception {
+    switch (_frame[ERRC]) {
+    case 0x00: return "Normal (no error).";
+    case 0x01: return "The header is not 'FINS' (ASCII code).";
+    case 0x02: return "The data length is too long.";
+    case 0x03: return "The command is not supported.";
+    default:   throw new Exception("Unkown error code found in the frame.");
+    }
+  }
+  
+  // indexes
+  private static final int LNGT_H = 6;
+  private static final int LNGT_L = 7;
+  private static final int COMM   = 11;
+  private static final int ERRC   = 15;
   
 }

@@ -1,5 +1,7 @@
 package com.dsp.network.clients;
 
+import com.dsp.libs.Utils;
+
 public class DebugClient implements Client {
 
   @Override
@@ -16,12 +18,14 @@ public class DebugClient implements Client {
 
   @Override
   public void send(byte[] data) throws Exception {
-    System.out.println(data);
+    System.out.print("SEND: ");
+    System.out.println(Utils.arrayToHexString(data));
   }
 
   @Override
   public void receive(byte[] response) throws Exception {
-    // TODO Auto-generated method stub
+    System.out.print("RCVD: ");
+    System.out.println(Utils.arrayToHexString(response));
   }
 
   @Override

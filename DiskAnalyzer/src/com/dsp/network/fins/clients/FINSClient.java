@@ -3,15 +3,14 @@ package com.dsp.network.fins.clients;
 import java.util.ArrayList;
 
 import com.dsp.config.Configurations;
-import com.dsp.network.exceptions.TooManyBadPacketsException;
+import com.dsp.libs.Utils;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 
 public abstract class FINSClient {
   
-  protected static final int MAXBADPACKETS  = Configurations.getInstance().getInt("PLC_MAXBADPACKETS");
-  protected static final int READCHUNK      = Configurations.getInstance().getInt("PLC_READCHUNK");
-  protected static final int WRITECHUNK     = Configurations.getInstance().getInt("PLC_WRITECHUNK");
-  protected static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
+  private static final int READCHUNK      = Configurations.getInstance().getInt("PLC_READCHUNK");
+  private static final int WRITECHUNK     = Configurations.getInstance().getInt("PLC_WRITECHUNK");
+  private static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
   
   public abstract void connect()    throws Exception;
   public abstract void disconnect() throws Exception;
@@ -28,23 +27,21 @@ public abstract class FINSClient {
    * @throws Exception
    */
   public ArrayList<Byte> readAreaFromPLC(String area, int address, int numWords) throws Exception {
-    int read   = 0;
-    int errors = 0;
     ArrayList<Byte> data = new ArrayList<Byte>();
-    
+    int read   = 0;
     while (read < numWords) {
       int toread = Math.min(READCHUNK, numWords - read);
+      
       FINSCommandResponseFrame response = sendCommand("area_read", area, address + read, toread);
-      if (!response.hasError()) {
-        // adds the words to the data buffer
-        for (byte b : response.getDataBuffer()) {
-          data.add(b);
-        }
-        read += toread;
-        errors = 0;
-      } else if (errors++ >= MAXBADPACKETS) {
-        throw new TooManyBadPacketsException();
+      if (response.hasError()) {
+        throw new Exception("Error sending command to the PLC: " + response.getErrorMessage());
       }
+      // adds the words to the data buffer
+      for (byte b : response.getDataBuffer()) {
+        data.add(b);
+      }
+      
+      read += toread;
     }
     
     return data;
@@ -73,7 +70,7 @@ public abstract class FINSClient {
    */
   public int readWordFromPLC(String area, int address) throws Exception {
     ArrayList<Byte> data = readAreaFromPLC(area, address, 1);
-    return ((int) data.get(0) & 0xff) << 8 | ((int) data.get(1) & 0xff);
+    return Utils.bytesToInt(data.get(0), data.get(1));
   }
   
   /**
@@ -84,10 +81,8 @@ public abstract class FINSClient {
    * @throws Exception
    */
   public void writeAreaToPLC(byte[] data, String area, int address) throws Exception {
-    int written = 0; // words
-    int errors  = 0;
-    
     final int total = data.length / BYTES_PER_WORD;
+    int written = 0; // words
     while (written < total) {
       int towrite = Math.min(WRITECHUNK, total - written);
       
@@ -97,12 +92,11 @@ public abstract class FINSClient {
       }
       
       FINSCommandResponseFrame response = sendCommand("area_write", area, address + written, towrite, dataToSend);
-      if (!response.hasError()) {
-        written += towrite;
-        errors = 0;
-      } else if (errors++ >= MAXBADPACKETS) {
-        throw new TooManyBadPacketsException();
+      if (response.hasError()) {
+        throw new Exception("Error sending command to the PLC: " + response.getErrorMessage());
       }
+      
+      written += towrite;
     }
   }
   

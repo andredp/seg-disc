@@ -53,8 +53,30 @@ public class Utils {
    * @return
    */
   public static double dIntToDouble(byte high_part, byte low_part, int decimal_cases) {
-    int word = (((int)high_part & 0xff) << 8) | ((int)low_part & 0xff);
-    return Utils.decimalIntToDouble(word, decimal_cases);
+    return Utils.decimalIntToDouble(bytesToInt(high_part, low_part), decimal_cases);
+  }
+  
+  /**
+   * 
+   * @param high_part
+   * @param low_part
+   * @return
+   */
+  public static int bytesToInt(byte high_part, byte low_part) {
+    return (((int) high_part & 0xff) << 8) | ((int) low_part & 0xff);
+  }
+  
+  /**
+   * 
+   * @param data
+   * @return
+   */
+  public static String arrayToHexString(byte[] data) {
+    String str = "";
+    for (byte b : data) {
+      str += String.format("%02X ", b);
+    }
+    return str;
   }
   
 }

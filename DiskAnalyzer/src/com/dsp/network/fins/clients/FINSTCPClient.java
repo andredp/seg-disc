@@ -2,6 +2,8 @@ package com.dsp.network.fins.clients;
 
 import java.io.IOException;
 
+import com.dsp.network.clients.Client;
+import com.dsp.network.clients.DebugClient;
 import com.dsp.network.clients.TCPClient;
 import com.dsp.network.fins.frames.FINSCommandFrame;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
@@ -13,7 +15,7 @@ import com.esotericsoftware.minlog.Log;
 
 public class FINSTCPClient extends FINSClient {
 
-  private TCPClient _client;
+  private Client _client;
   private String    _host;
   private int       _port;
   private boolean   _initialized = false;
@@ -31,7 +33,8 @@ public class FINSTCPClient extends FINSClient {
   public FINSTCPClient(String host, int port) throws Exception {
     _host = host;
     _port = port;
-    _client = new TCPClient(_host, _port);
+    //_client = new TCPClient(_host, _port);
+    _client = new DebugClient();
   }
   
   /**
@@ -63,15 +66,15 @@ public class FINSTCPClient extends FINSClient {
     FINSTCPHeaderConnResponseFrame connResponse = new FINSTCPHeaderConnResponseFrame();
     _client.receive(connResponse.getRawFrame());
     if (connResponse.hasError()) { // error check
-      Log.error("TCPFinsClient", "FINS/TCP error. Could not connect to host.");
+      Log.error("FINSTCPClient", "FINS/TCP error: " + connResponse.getErrorMessage());
       throw new Exception("Could not establish connection.");
     }
     _finsHeaderFrame.setDA1(connResponse.getServerNode());
     _finsHeaderFrame.setSA1(connResponse.getClientNode());
     
-    Log.info("TCPFinsClient", "Connection Successfull!");
-    Log.info("\tClient Node: " + _finsHeaderFrame.getSA1());
-    Log.info("\tServer Node: " + _finsHeaderFrame.getDA1());
+    Log.info("FINSTCPClient", "Connection Successfull!");
+    Log.info("FINSTCPClient", "Client Node: " + (int) _finsHeaderFrame.getSA1());
+    Log.info("FINSTCPClient", "Server Node: " + (int) _finsHeaderFrame.getDA1());
   }
 
   /**
@@ -137,8 +140,8 @@ public class FINSTCPClient extends FINSClient {
       throw new Exception("Couldn't read data.");
     }
     _client.receive(_finsRespFrame.getRawFrame());    // Receive FINS Header
-    _commRespFrame.prepareDataBuffer(_tcpRespFrame.getDataLength());
     _client.receive(_commRespFrame.getRawFrame());    // Receive Command Response
+    _commRespFrame.prepareDataBuffer(_tcpRespFrame.getDataLength());
     _client.receive(_commRespFrame.getDataBuffer());  // Receive Data (if it needs)
     
     return _commRespFrame;

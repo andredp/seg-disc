@@ -27,20 +27,20 @@ public class FINSCommandFrame extends FINSFrame {
   }
   
   public void setCommandCode(String type) throws UnknownCommandTypeException {
-    if (type.equalsIgnoreCase("area_read"))  { _frame[COMM_0] = (byte) 0x01; _frame[COMM_1] = (byte) 0x01; return; }
-    if (type.equalsIgnoreCase("area_write")) { _frame[COMM_0] = (byte) 0x01; _frame[COMM_1] = (byte) 0x02; return; }
+    if (type.equalsIgnoreCase("area_read"))  { _frame[COMM_H] = (byte) 0x01; _frame[COMM_L] = (byte) 0x01; return; }
+    if (type.equalsIgnoreCase("area_write")) { _frame[COMM_H] = (byte) 0x01; _frame[COMM_L] = (byte) 0x02; return; }
     // enter other commands...
     throw new UnknownCommandTypeException(type);
   }
   
   public void setMemAddress(int address) {
-    _frame[ADDR_0]  = Utils.decToHexBytes(address, 2);
-    _frame[ADDR_1]  = Utils.decToHexBytes(address, 3);
+    _frame[ADDR_H]  = Utils.decToHexBytes(address, 2);
+    _frame[ADDR_L]  = Utils.decToHexBytes(address, 3);
   }
   
   public void setNumWords(int words) {
-    _frame[WRDS_0] = Utils.decToHexBytes(words, 2);
-    _frame[WRDS_1] = Utils.decToHexBytes(words, 3);
+    _frame[WRDS_H] = Utils.decToHexBytes(words, 2);
+    _frame[WRDS_L] = Utils.decToHexBytes(words, 3);
   }
   
   public void prepareFrame(String type, String area, int address, int amount) 
@@ -56,13 +56,13 @@ public class FINSCommandFrame extends FINSFrame {
   }
 
   // fields indexes
-  private static final int COMM_0 = 0;
-  private static final int COMM_1 = 1;
+  private static final int COMM_H = 0;
+  private static final int COMM_L = 1;
   private static final int AREA   = 2;
-  private static final int ADDR_0 = 3; 
-  private static final int ADDR_1 = 4;
+  private static final int ADDR_H = 3; 
+  private static final int ADDR_L = 4;
 //private static final int BIT    = 5;
-  private static final int WRDS_0 = 6; 
-  private static final int WRDS_1 = 7;
+  private static final int WRDS_H = 6; 
+  private static final int WRDS_L = 7;
   
 }
