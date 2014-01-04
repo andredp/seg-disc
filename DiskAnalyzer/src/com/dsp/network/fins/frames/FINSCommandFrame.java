@@ -26,11 +26,18 @@ public class FINSCommandFrame extends Frame {
     throw new UnknownMemoryAreaException(area);
   }
   
-  public void setCommandCode(String type) throws UnknownCommandTypeException {
-    if (type.equalsIgnoreCase("area_read"))  { _frame[COMM_H] = (byte) 0x01; _frame[COMM_L] = (byte) 0x01; return; }
-    if (type.equalsIgnoreCase("area_write")) { _frame[COMM_H] = (byte) 0x01; _frame[COMM_L] = (byte) 0x02; return; }
-    // enter other commands...
-    throw new UnknownCommandTypeException(type);
+  public void setCommandCode(CommandType type) throws UnknownCommandTypeException {
+    switch (type) {
+    case AREA_READ: 
+      _frame[COMM_H] = (byte) 0x01; 
+      _frame[COMM_L] = (byte) 0x01; 
+      return;
+    case AREA_WRITE: 
+      _frame[COMM_H] = (byte) 0x01; 
+      _frame[COMM_L] = (byte) 0x02; 
+      return;
+    default: throw new UnknownCommandTypeException(type.toString());
+    }
   }
   
   public void setMemAddress(int address) {
@@ -43,7 +50,7 @@ public class FINSCommandFrame extends Frame {
     _frame[WRDS_L] = Utils.decToHexBytes(words, 3);
   }
   
-  public void prepareFrame(String type, String area, int address, int amount) 
+  public void prepareFrame(CommandType type, String area, int address, int amount) 
       throws UnknownMemoryAreaException, UnknownCommandTypeException {
     setMemArea(area);
     setCommandCode(type);
@@ -54,6 +61,11 @@ public class FINSCommandFrame extends Frame {
   public static int frameLength() {
     return TEMPLATE.length;
   }
+  
+  // command type enum
+  public enum CommandType {
+    AREA_WRITE, AREA_READ
+  };
 
   // fields indexes
   private static final int COMM_H = 0;

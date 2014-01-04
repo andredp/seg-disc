@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.dsp.config.Configs;
 import com.dsp.libs.Utils;
+import com.dsp.network.fins.frames.FINSCommandFrame.CommandType;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 
 public abstract class FINSClient {
@@ -15,8 +16,8 @@ public abstract class FINSClient {
   public abstract void connect()    throws Exception;
   public abstract void disconnect() throws Exception;
   
-  protected abstract FINSCommandResponseFrame sendCommand(String type, String area, int address, int words)              throws Exception;
-  protected abstract FINSCommandResponseFrame sendCommand(String type, String area, int address, int words, byte[] data) throws Exception;
+  protected abstract FINSCommandResponseFrame sendCommand(CommandType type, String area, int address, int words)              throws Exception;
+  protected abstract FINSCommandResponseFrame sendCommand(CommandType type, String area, int address, int words, byte[] data) throws Exception;
   
   /**
    * 
@@ -32,7 +33,7 @@ public abstract class FINSClient {
     while (read < numWords) {
       int toread = Math.min(READCHUNK, numWords - read);
       
-      FINSCommandResponseFrame response = sendCommand("area_read", area, address + read, toread);
+      FINSCommandResponseFrame response = sendCommand(CommandType.AREA_READ, area, address + read, toread);
       if (response.hasError()) {
         throw new Exception("Error sending command to the PLC: " + response.getErrorMessage());
       }
@@ -91,7 +92,7 @@ public abstract class FINSClient {
         dataToSend[i] = data[(written * BYTES_PER_WORD) + i];
       }
       
-      FINSCommandResponseFrame response = sendCommand("area_write", area, address + written, towrite, dataToSend);
+      FINSCommandResponseFrame response = sendCommand(CommandType.AREA_WRITE, area, address + written, towrite, dataToSend);
       if (response.hasError()) {
         throw new Exception("Error sending command to the PLC: " + response.getErrorMessage());
       }

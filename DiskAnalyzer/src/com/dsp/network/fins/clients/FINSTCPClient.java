@@ -3,23 +3,23 @@ package com.dsp.network.fins.clients;
 import java.io.IOException;
 
 import com.dsp.network.clients.Client;
-import com.dsp.network.clients.DebugClient;
 import com.dsp.network.clients.TCPClient;
 import com.dsp.network.fins.frames.FINSCommandFrame;
+import com.dsp.network.fins.frames.FINSCommandFrame.CommandType;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 import com.dsp.network.fins.frames.FINSHeaderFrame;
-import com.dsp.network.fins.frames.FINSTCPConnectionResponseFrame;
 import com.dsp.network.fins.frames.FINSTCPConnectionFrame;
+import com.dsp.network.fins.frames.FINSTCPConnectionResponseFrame;
 import com.dsp.network.fins.frames.FINSTCPHeaderFrame;
 import com.dsp.network.fins.frames.FINSTCPHeaderResponseFrame;
 import com.esotericsoftware.minlog.Log;
 
 public class FINSTCPClient extends FINSClient {
 
-  private Client _client;
-  private String    _host;
-  private int       _port;
-  private boolean   _initialized = false;
+  private Client  _client;
+  private String  _host;
+  private int     _port;
+  private boolean _initialized = false;
   
   // requests
   private FINSTCPHeaderFrame _tcpHeader  = new FINSTCPHeaderFrame();
@@ -31,15 +31,23 @@ public class FINSTCPClient extends FINSClient {
   private FINSHeaderFrame            _finsHeaderResp = new FINSHeaderFrame();
   private FINSCommandResponseFrame   _commandResp    = new FINSCommandResponseFrame();
   
+  /**
+   * This class is a client to the Omron's PLC (pc1l-e) that allows arrays, words or bits to be 
+   * written or read from it.
+   * 
+   * @param host  the PLC's IP address
+   * @param port  the PLC's port
+   * @throws Exception
+   */
   public FINSTCPClient(String host, int port) throws Exception {
     _host = host;
     _port = port;
-    //_client = new TCPClient(_host, _port);
-    _client = new DebugClient();
+    _client = new TCPClient(_host, _port);
+    //_client = new DebugClient();
   }
   
   /**
-   * 
+   * Establishes a connection to the PLC (handshake)
    */
   @Override
   public void connect() throws Exception {
@@ -47,8 +55,9 @@ public class FINSTCPClient extends FINSClient {
   }
   
   /**
+   * Establishes a connection to the PLC (handshake) with the ability to force it
    * 
-   * @param forceReconnection
+   * @param forceReconnection  when true, forces a full reconnection to the host
    * @throws Exception
    */
   private void connect(boolean forceReconnection) throws Exception {
@@ -79,7 +88,7 @@ public class FINSTCPClient extends FINSClient {
   }
 
   /**
-   * 
+   * Disconnects from the host
    */
   @Override
   public void disconnect() throws Exception {
@@ -87,18 +96,24 @@ public class FINSTCPClient extends FINSClient {
   }
   
   /**
+   * Used to send read commands (where there is no data to be written in the PLC)
    * 
+   * @return the Command Response Frame containing the actual response and the data read
    */
   @Override
-  public FINSCommandResponseFrame sendCommand(String type, String area, int address, int words) throws Exception {
+  public FINSCommandResponseFrame sendCommand(CommandType type, String area, int address, int words) throws Exception {
     return sendCommand(type, area, address, words, null);
   }
   
   /**
+   * Used to send write commands (wraps the internalSendCommand to check for IOExceptions from the
+   * socket, retrying the connection when that happens)
    * 
+   * @see internalSendCommand
+   * @return the Command Response Frame containing the actual response 
    */
   @Override
-  public FINSCommandResponseFrame sendCommand(String type, String area, int address, int words, byte[] data) throws Exception {
+  public FINSCommandResponseFrame sendCommand(CommandType type, String area, int address, int words, byte[] data) throws Exception {
     int tries = 2;
     while (tries >= 0) {
       try {
@@ -114,6 +129,7 @@ public class FINSTCPClient extends FINSClient {
   
   /**
    * 
+   * 
    * @param type
    * @param area
    * @param address
@@ -122,7 +138,7 @@ public class FINSTCPClient extends FINSClient {
    * @return
    * @throws Exception
    */
-  private FINSCommandResponseFrame internalSendCommand(String type, String area, int address, int words, byte data[]) throws Exception {
+  private FINSCommandResponseFrame internalSendCommand(CommandType type, String area, int address, int words, byte data[]) throws Exception {
     int length = FINSTCPHeaderFrame.frameLength() + FINSHeaderFrame.frameLength() 
                + FINSCommandFrame.frameLength() + (data != null ? data.length : 0);
     _tcpHeader.setLength(length);
@@ -134,7 +150,7 @@ public class FINSTCPClient extends FINSClient {
     _client.send(_command.getRawFrame());           // Send Command Frame
     if (data != null) _client.send(data);           // Send Data (if there is any)
     
-    // RECEIVING COMMAND
+    // RECEIVING RESPONSE
     _client.receive(_tcpHeaderResp.getRawFrame());  // Receive TCP Header
     if (_tcpHeaderResp.hasError()) {
       Log.error("TCPFinsClient", "FINS/TCP Send Frame error! <code: " + _tcpHeaderResp.getErrorCode());
