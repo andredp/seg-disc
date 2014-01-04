@@ -7,7 +7,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Configurations extends Properties {
+public class Configs extends Properties {
   
   private static final long serialVersionUID = 201311161734L;
 
@@ -48,11 +48,11 @@ public class Configurations extends Properties {
   }
   
   // === Singleton Implementation
-  private static Configurations _instance = new Configurations();
+  private static Configs _instance = new Configs();
   
-  private Configurations() { }
+  private Configs() { }
 
-  public static Configurations getInstance() {
+  public static Configs getInstance() {
     return _instance;
   }
   // === Singleton Implementation

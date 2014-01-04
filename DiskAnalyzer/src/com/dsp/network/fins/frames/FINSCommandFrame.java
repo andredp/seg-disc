@@ -4,7 +4,7 @@ import com.dsp.libs.Utils;
 import com.dsp.network.exceptions.UnknownCommandTypeException;
 import com.dsp.network.exceptions.UnknownMemoryAreaException;
 
-public class FINSCommandFrame extends FINSFrame {
+public class FINSCommandFrame extends Frame {
 
   private static final byte[] TEMPLATE = {
     // Command 

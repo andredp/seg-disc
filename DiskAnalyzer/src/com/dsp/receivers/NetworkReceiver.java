@@ -3,7 +3,7 @@ package com.dsp.receivers;
 import java.util.ArrayList;
 
 import com.dsp.analyzer.DiscRawData;
-import com.dsp.config.Configurations;
+import com.dsp.config.Configs;
 import com.dsp.libs.Utils;
 import com.dsp.network.fins.clients.FINSClient;
 import com.dsp.network.fins.clients.FINSTCPClient;
@@ -55,8 +55,7 @@ public class NetworkReceiver implements Receiver {
   public void waitForData() throws Exception {
     try {
       while (true) {
-        boolean run_bit = _client.readBitFromPLC(RUN_BIT_AREA, RUN_BIT_ADDR, RUN_BIT_OFFSET);
-        if (run_bit == true) return;
+        if (hasData()) return;
         Thread.sleep(CHECK_INTERVAL);
       }
     } catch (Exception e) {
@@ -141,22 +140,22 @@ public class NetworkReceiver implements Receiver {
   
   // ====== CONSTANTS
   
-  private static final int    BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
+  private static final int    BYTES_PER_WORD = Configs.getInstance().getInt("BYTES_PER_WORD");
   
-  private static final String PLC_IP   = Configurations.getInstance().getProperty("PLC_IP");
-  private static final int    PLC_PORT = Configurations.getInstance().getInt("PLC_PORT");
+  private static final String PLC_IP   = Configs.getInstance().getProperty("PLC_IP");
+  private static final int    PLC_PORT = Configs.getInstance().getInt("PLC_PORT");
 
-  private static final String SEG_DATA_AREA      = Configurations.getInstance().getProperty("SEG_DATA_AREA");
-  private static final int[]  FRONT_ADDR         = Configurations.getInstance().getVector2i("FRONT_SEG_DATA");
-  private static final int[]  BACK_ADDR          = Configurations.getInstance().getVector2i("BACK_SEG_DATA");
-  private static final int    SEG_DATA_DEC_CASES = Configurations.getInstance().getInt("SEG_DATA_DEC_CASES");
+  private static final String SEG_DATA_AREA      = Configs.getInstance().getProperty("SEG_DATA_AREA");
+  private static final int[]  FRONT_ADDR         = Configs.getInstance().getVector2i("FRONT_SEG_DATA");
+  private static final int[]  BACK_ADDR          = Configs.getInstance().getVector2i("BACK_SEG_DATA");
+  private static final int    SEG_DATA_DEC_CASES = Configs.getInstance().getInt("SEG_DATA_DEC_CASES");
   
-  private static final String RUN_BIT_AREA   = Configurations.getInstance().getProperty("RUN_BIT_AREA");
-  private static final int    RUN_BIT_ADDR   = Configurations.getInstance().getInt("RUN_BIT_ADDR");
-  private static final int    RUN_BIT_OFFSET = Configurations.getInstance().getInt("RUN_BIT_OFFSET");
-  private static final int    CHECK_INTERVAL = Configurations.getInstance().getInt("RUN_CHECK_INTERVAL");
+  private static final String RUN_BIT_AREA   = Configs.getInstance().getProperty("RUN_BIT_AREA");
+  private static final int    RUN_BIT_ADDR   = Configs.getInstance().getInt("RUN_BIT_ADDR");
+  private static final int    RUN_BIT_OFFSET = Configs.getInstance().getInt("RUN_BIT_OFFSET");
+  private static final int    CHECK_INTERVAL = Configs.getInstance().getInt("RUN_CHECK_INTERVAL");
   
-  private static final String WORK_TOL_AREA      = Configurations.getInstance().getProperty("WORK_TOL_AREA");
-  private static final int    WORK_TOL_ADDR      = Configurations.getInstance().getInt("WORK_TOL_ADDR");
-  private static final int    WORK_TOL_DEC_CASES = Configurations.getInstance().getInt("WORK_TOL_DEC_CASES");
+  private static final String WORK_TOL_AREA      = Configs.getInstance().getProperty("WORK_TOL_AREA");
+  private static final int    WORK_TOL_ADDR      = Configs.getInstance().getInt("WORK_TOL_ADDR");
+  private static final int    WORK_TOL_DEC_CASES = Configs.getInstance().getInt("WORK_TOL_DEC_CASES");
 }

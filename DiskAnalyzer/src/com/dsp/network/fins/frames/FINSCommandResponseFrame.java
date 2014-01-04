@@ -1,7 +1,7 @@
 package com.dsp.network.fins.frames;
 
 
-public class FINSCommandResponseFrame extends FINSFrame {
+public class FINSCommandResponseFrame extends Frame {
 
   public static final byte[] TEMPLATE = {
     // Command

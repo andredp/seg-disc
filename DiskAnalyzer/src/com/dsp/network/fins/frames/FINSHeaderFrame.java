@@ -1,6 +1,6 @@
 package com.dsp.network.fins.frames;
 
-public class FINSHeaderFrame extends FINSFrame {
+public class FINSHeaderFrame extends Frame {
 
   private static final byte[] TEMPLATE = {
     (byte) 0x80,    // ICF - 0x00 = Command that requires a response
@@ -32,21 +32,21 @@ public class FINSHeaderFrame extends FINSFrame {
   public void setSID(byte sid) { _frame[SID] = sid;  }
   public void setDA1(byte da1) { _frame[DA1] = da1;  }
   public void setSA1(byte sa1) { _frame[SA1] = sa1;  }
+  
+  // the same as above but more expressive
+  public byte getServerNode()        { return _frame[DA1]; }
+  public byte getClientNode()        { return _frame[SA1]; }
+  
+  public void setServerNode(byte cn) { _frame[DA1] = cn; }
+  public void setClientNode(byte cn) { _frame[SA1] = cn; }
 
   public static int frameLength() {
     return TEMPLATE.length;
   }
   
   // fields indexes
-//private static final int ICF = 0;
-//private static final int RSV = 1;
-//private static final int GCT = 2;
-//private static final int DNA = 3;
   private static final int DA1 = 4;
-//private static final int DA2 = 5;
-//private static final int SNA = 6;
   private static final int SA1 = 7;
-//private static final int SA2 = 8;
   private static final int SID = 9;
 
 }

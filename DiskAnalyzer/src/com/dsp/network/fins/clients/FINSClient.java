@@ -2,15 +2,15 @@ package com.dsp.network.fins.clients;
 
 import java.util.ArrayList;
 
-import com.dsp.config.Configurations;
+import com.dsp.config.Configs;
 import com.dsp.libs.Utils;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 
 public abstract class FINSClient {
   
-  private static final int READCHUNK      = Configurations.getInstance().getInt("PLC_READCHUNK");
-  private static final int WRITECHUNK     = Configurations.getInstance().getInt("PLC_WRITECHUNK");
-  private static final int BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
+  private static final int READCHUNK      = Configs.getInstance().getInt("PLC_READCHUNK");
+  private static final int WRITECHUNK     = Configs.getInstance().getInt("PLC_WRITECHUNK");
+  private static final int BYTES_PER_WORD = Configs.getInstance().getInt("BYTES_PER_WORD");
   
   public abstract void connect()    throws Exception;
   public abstract void disconnect() throws Exception;

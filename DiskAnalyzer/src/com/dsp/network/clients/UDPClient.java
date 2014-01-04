@@ -7,14 +7,14 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import com.dsp.config.Configurations;
+import com.dsp.config.Configs;
 import com.dsp.network.exceptions.UDPRetriesExceededException;
 import com.esotericsoftware.minlog.Log;
 
 public class UDPClient implements Client {
 
-  private static final int UDP_RETRIES = Configurations.getInstance().getInt("UDP_RETRIES");
-  private static final int UDP_TIMEOUT = Configurations.getInstance().getInt("UDP_TIMEOUT");
+  private static final int UDP_RETRIES = Configs.getInstance().getInt("UDP_RETRIES");
+  private static final int UDP_TIMEOUT = Configs.getInstance().getInt("UDP_TIMEOUT");
 
   private DatagramSocket _socket = null;
 

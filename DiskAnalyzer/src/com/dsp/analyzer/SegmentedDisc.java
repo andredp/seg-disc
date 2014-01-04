@@ -3,7 +3,7 @@ package com.dsp.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dsp.config.Configurations;
+import com.dsp.config.Configs;
 import com.dsp.libs.StdStats;
 import com.esotericsoftware.minlog.Log;
 
@@ -11,8 +11,8 @@ public class SegmentedDisc {
 
   private static final double MEAN_THRESHOLD = 0.9;
 
-  private static final double[] VALID_READ_RANGE = Configurations.getInstance().getVector2d("VALID_READ_RANGE");
-  private static final int      ERROR_THRESHOLD  = Configurations.getInstance().getInt("SEG_ERROR_THRESHOLD");
+  private static final double[] VALID_READ_RANGE = Configs.getInstance().getVector2d("VALID_READ_RANGE");
+  private static final int      ERROR_THRESHOLD  = Configs.getInstance().getInt("SEG_ERROR_THRESHOLD");
 
   private List<Segment> _frontSegments = new ArrayList<Segment>();
   private List<Segment> _backSegments  = new ArrayList<Segment>();

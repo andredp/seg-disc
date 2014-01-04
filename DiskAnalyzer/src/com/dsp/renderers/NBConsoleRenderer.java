@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.dsp.analyzer.Segment;
 import com.dsp.analyzer.SegmentedDisc;
-import com.dsp.config.Configurations;
+import com.dsp.config.Configs;
 import com.dsp.libs.Utils;
 import com.dsp.network.fins.clients.FINSClient;
 import com.dsp.network.fins.clients.FINSTCPClient;
@@ -188,37 +188,37 @@ public class NBConsoleRenderer implements DiscRenderer {
   }
   
   // ===== CONSTANTS
-  private static final int    PLC_PORT = Configurations.getInstance().getInt("PLC_PORT");
-  private static final String PLC_IP   = Configurations.getInstance().getProperty("PLC_IP");
+  private static final int    PLC_PORT = Configs.getInstance().getInt("PLC_PORT");
+  private static final String PLC_IP   = Configs.getInstance().getProperty("PLC_IP");
   
-  private static final int    BYTES_PER_WORD = Configurations.getInstance().getInt("BYTES_PER_WORD");
+  private static final int    BYTES_PER_WORD = Configs.getInstance().getInt("BYTES_PER_WORD");
   
   // State
-  private static final String STATE_AREA     = Configurations.getInstance().getProperty("STATE_AREA");
-  private static final int    STATE_ADDR     = Configurations.getInstance().getInt("STATE_ADDR");
-  private static final int    STATE_OK       = Configurations.getInstance().getInt("STATE_OK");
-  private static final int    STATE_NOK      = Configurations.getInstance().getInt("STATE_NOK");
-  private static final int    STATE_LDING    = Configurations.getInstance().getInt("STATE_LDING");
-  private static final int    STATE_ERROR    = Configurations.getInstance().getInt("STATE_ERROR");
-  private static final int    STATE_MORE_ERR = Configurations.getInstance().getInt("STATE_MORE_ERR");
+  private static final String STATE_AREA     = Configs.getInstance().getProperty("STATE_AREA");
+  private static final int    STATE_ADDR     = Configs.getInstance().getInt("STATE_ADDR");
+  private static final int    STATE_OK       = Configs.getInstance().getInt("STATE_OK");
+  private static final int    STATE_NOK      = Configs.getInstance().getInt("STATE_NOK");
+  private static final int    STATE_LDING    = Configs.getInstance().getInt("STATE_LDING");
+  private static final int    STATE_ERROR    = Configs.getInstance().getInt("STATE_ERROR");
+  private static final int    STATE_MORE_ERR = Configs.getInstance().getInt("STATE_MORE_ERR");
   
   // Print Info
-  protected static final int DISP_DEC_CASES   = Configurations.getInstance().getInt("DISP_DEC_CASES");
+  protected static final int DISP_DEC_CASES   = Configs.getInstance().getInt("DISP_DEC_CASES");
   
-  protected static final String PRINT_AREA    = Configurations.getInstance().getProperty("PRINT_AREA");
-  protected static final int    P_INDEX_ADDR  = Configurations.getInstance().getInt("P_INDEX_ADDR");
-  protected static final int    P_MIDPOS_ADDR = Configurations.getInstance().getInt("P_MIDPOS_ADDR");
-  protected static final int    P_FSAL_ADDR   = Configurations.getInstance().getInt("P_FSAL_ADDR");
-  protected static final int    P_BSAL_ADDR   = Configurations.getInstance().getInt("P_BSAL_ADDR");
-  protected static final int    P_FWORK_ADDR  = Configurations.getInstance().getInt("P_FWORK_ADDR");
-  protected static final int    P_BWORK_ADDR  = Configurations.getInstance().getInt("P_BWORK_ADDR");
+  protected static final String PRINT_AREA    = Configs.getInstance().getProperty("PRINT_AREA");
+  protected static final int    P_INDEX_ADDR  = Configs.getInstance().getInt("P_INDEX_ADDR");
+  protected static final int    P_MIDPOS_ADDR = Configs.getInstance().getInt("P_MIDPOS_ADDR");
+  protected static final int    P_FSAL_ADDR   = Configs.getInstance().getInt("P_FSAL_ADDR");
+  protected static final int    P_BSAL_ADDR   = Configs.getInstance().getInt("P_BSAL_ADDR");
+  protected static final int    P_FWORK_ADDR  = Configs.getInstance().getInt("P_FWORK_ADDR");
+  protected static final int    P_BWORK_ADDR  = Configs.getInstance().getInt("P_BWORK_ADDR");
   
   // Errors
-  protected static final String ERROR_DISP_AREA   = Configurations.getInstance().getProperty("ERROR_DISP_AREA");
-  protected static final int    F_ERROR_DISP_ADDR = Configurations.getInstance().getInt("F_ERROR_DISP_ADDR");
-  protected static final int    B_ERROR_DISP_ADDR = Configurations.getInstance().getInt("B_ERROR_DISP_ADDR");
-  protected static final int    MAX_ERRORS_DISP   = Configurations.getInstance().getInt("MAX_ERRORS_DISP");
-  protected static final int    ERROR_DISP_STEP   = Configurations.getInstance().getInt("ERROR_DISP_STEP");
+  protected static final String ERROR_DISP_AREA   = Configs.getInstance().getProperty("ERROR_DISP_AREA");
+  protected static final int    F_ERROR_DISP_ADDR = Configs.getInstance().getInt("F_ERROR_DISP_ADDR");
+  protected static final int    B_ERROR_DISP_ADDR = Configs.getInstance().getInt("B_ERROR_DISP_ADDR");
+  protected static final int    MAX_ERRORS_DISP   = Configs.getInstance().getInt("MAX_ERRORS_DISP");
+  protected static final int    ERROR_DISP_STEP   = Configs.getInstance().getInt("ERROR_DISP_STEP");
 
   @Override
   public void disconnect() {

@@ -1,10 +1,10 @@
 package com.dsp.network.fins.frames;
 
-public abstract class FINSFrame {
+public abstract class Frame {
 
   protected byte[] _frame;
   
-  protected FINSFrame(byte[] frame) {
+  protected Frame(byte[] frame) {
     _frame = frame;
   }
   

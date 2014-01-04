@@ -8,9 +8,10 @@ import com.dsp.network.clients.TCPClient;
 import com.dsp.network.fins.frames.FINSCommandFrame;
 import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 import com.dsp.network.fins.frames.FINSHeaderFrame;
-import com.dsp.network.fins.frames.FINSTCPHeaderConnResponseFrame;
-import com.dsp.network.fins.frames.FINSTCPHeaderConnectionFrame;
-import com.dsp.network.fins.frames.FINSTCPHeaderSendFrame;
+import com.dsp.network.fins.frames.FINSTCPConnectionResponseFrame;
+import com.dsp.network.fins.frames.FINSTCPConnectionFrame;
+import com.dsp.network.fins.frames.FINSTCPHeaderFrame;
+import com.dsp.network.fins.frames.FINSTCPHeaderResponseFrame;
 import com.esotericsoftware.minlog.Log;
 
 public class FINSTCPClient extends FINSClient {
@@ -21,14 +22,14 @@ public class FINSTCPClient extends FINSClient {
   private boolean   _initialized = false;
   
   // requests
-  private FINSTCPHeaderSendFrame _tcpHeaderFrame  = new FINSTCPHeaderSendFrame();
-  private FINSHeaderFrame        _finsHeaderFrame = new FINSHeaderFrame();
-  private FINSCommandFrame       _commandFrame    = new FINSCommandFrame();
+  private FINSTCPHeaderFrame _tcpHeader  = new FINSTCPHeaderFrame();
+  private FINSHeaderFrame    _finsHeader = new FINSHeaderFrame();
+  private FINSCommandFrame   _command    = new FINSCommandFrame();
   
   // responses
-  private FINSTCPHeaderSendFrame   _tcpRespFrame  = new FINSTCPHeaderSendFrame();
-  private FINSHeaderFrame          _finsRespFrame = new FINSHeaderFrame();
-  private FINSCommandResponseFrame _commRespFrame = new FINSCommandResponseFrame();
+  private FINSTCPHeaderResponseFrame _tcpHeaderResp  = new FINSTCPHeaderResponseFrame();
+  private FINSHeaderFrame            _finsHeaderResp = new FINSHeaderFrame();
+  private FINSCommandResponseFrame   _commandResp    = new FINSCommandResponseFrame();
   
   public FINSTCPClient(String host, int port) throws Exception {
     _host = host;
@@ -59,22 +60,22 @@ public class FINSTCPClient extends FINSClient {
       _client = new TCPClient(_host, _port);
     }
     
-    FINSTCPHeaderConnectionFrame connFrame = new FINSTCPHeaderConnectionFrame();
-    connFrame.setClientNode((byte) 0x00); // automatic node assignment
-    _client.send(connFrame.getRawFrame());
+    FINSTCPConnectionFrame connectionFrame = new FINSTCPConnectionFrame();
+    connectionFrame.setClientNode((byte) 0x00); // automatic node assignment
+    _client.send(connectionFrame.getRawFrame());
     
-    FINSTCPHeaderConnResponseFrame connResponse = new FINSTCPHeaderConnResponseFrame();
-    _client.receive(connResponse.getRawFrame());
-    if (connResponse.hasError()) { // error check
-      Log.error("FINSTCPClient", "FINS/TCP error: " + connResponse.getErrorMessage());
+    FINSTCPConnectionResponseFrame connectionResponse = new FINSTCPConnectionResponseFrame();
+    _client.receive(connectionResponse.getRawFrame());
+    if (connectionResponse.hasError()) { // error check
+      Log.error("FINSTCPClient", "FINS/TCP error: " + connectionResponse.getErrorMessage());
       throw new Exception("Could not establish connection.");
     }
-    _finsHeaderFrame.setDA1(connResponse.getServerNode());
-    _finsHeaderFrame.setSA1(connResponse.getClientNode());
+    _finsHeader.setServerNode(connectionResponse.getServerNode());
+    _finsHeader.setClientNode(connectionResponse.getClientNode());
     
     Log.info("FINSTCPClient", "Connection Successfull!");
-    Log.info("FINSTCPClient", "Client Node: " + (int) _finsHeaderFrame.getSA1());
-    Log.info("FINSTCPClient", "Server Node: " + (int) _finsHeaderFrame.getDA1());
+    Log.info("FINSTCPClient", "Client Node: " + (int) _finsHeader.getClientNode());
+    Log.info("FINSTCPClient", "Server Node: " + (int) _finsHeader.getServerNode());
   }
 
   /**
@@ -122,29 +123,29 @@ public class FINSTCPClient extends FINSClient {
    * @throws Exception
    */
   private FINSCommandResponseFrame internalSendCommand(String type, String area, int address, int words, byte data[]) throws Exception {
-    int length = FINSTCPHeaderSendFrame.frameLength() + FINSHeaderFrame.frameLength() 
+    int length = FINSTCPHeaderFrame.frameLength() + FINSHeaderFrame.frameLength() 
                + FINSCommandFrame.frameLength() + (data != null ? data.length : 0);
-    _tcpHeaderFrame.setLength(length);
-    _commandFrame.prepareFrame(type, area, address, words);
+    _tcpHeader.setLength(length);
+    _command.prepareFrame(type, area, address, words);
     
     // SENDING COMMAND
-    _client.send(_tcpHeaderFrame.getRawFrame());      // Send TCP Header
-    _client.send(_finsHeaderFrame.getRawFrame());     // Send FINS Header
-    _client.send(_commandFrame.getRawFrame());        // Send Command Frame
+    _client.send(_tcpHeader.getRawFrame());      // Send TCP Header
+    _client.send(_finsHeader.getRawFrame());     // Send FINS Header
+    _client.send(_command.getRawFrame());        // Send Command Frame
     if (data != null) _client.send(data);             // Send Data (if there is any)
     
     // RECEIVING COMMAND
-    _client.receive(_tcpRespFrame.getRawFrame());     // Receive TCP Header
-    if (_tcpRespFrame.hasError()) {
-      Log.error("TCPFinsClient", "FINS/TCP Send Frame error! <code: " + _tcpRespFrame.getErrorCode());
+    _client.receive(_tcpHeaderResp.getRawFrame());     // Receive TCP Header
+    if (_tcpHeaderResp.hasError()) {
+      Log.error("TCPFinsClient", "FINS/TCP Send Frame error! <code: " + _tcpHeaderResp.getErrorCode());
       throw new Exception("Couldn't read data.");
     }
-    _client.receive(_finsRespFrame.getRawFrame());    // Receive FINS Header
-    _client.receive(_commRespFrame.getRawFrame());    // Receive Command Response
-    _commRespFrame.prepareDataBuffer(_tcpRespFrame.getDataLength());
-    _client.receive(_commRespFrame.getDataBuffer());  // Receive Data (if it needs)
+    _client.receive(_finsHeaderResp.getRawFrame());    // Receive FINS Header
+    _client.receive(_commandResp.getRawFrame());    // Receive Command Response
+    _commandResp.prepareDataBuffer(_tcpHeaderResp.getDataLength());
+    _client.receive(_commandResp.getDataBuffer());  // Receive Data (if it needs)
     
-    return _commRespFrame;
+    return _commandResp;
   }
 
 }

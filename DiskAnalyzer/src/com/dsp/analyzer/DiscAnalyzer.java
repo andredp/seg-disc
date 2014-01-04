@@ -1,6 +1,6 @@
 package com.dsp.analyzer;
 
-import com.dsp.config.Configurations;
+import com.dsp.config.Configs;
 import com.dsp.receivers.NetworkReceiver;
 import com.dsp.receivers.Receiver;
 import com.dsp.renderers.DiscRenderer;
@@ -15,7 +15,7 @@ public class DiscAnalyzer {
   void startAnalyzing() {
     try {
       // Initialization
-      Configurations.getInstance().load("config.dat");
+      Configs.getInstance().load("config.dat");
       Log.DEBUG(); // debug level
       
       _plc     = new NetworkReceiver();
@@ -44,8 +44,7 @@ public class DiscAnalyzer {
       }
       
     } catch (Exception e) {
-      e.printStackTrace();
-      return;
+      Log.error("DiscAnalyzer", "Error:" + e.getMessage());
     } finally {
       _plc.disconnect();
       _console.disconnect();

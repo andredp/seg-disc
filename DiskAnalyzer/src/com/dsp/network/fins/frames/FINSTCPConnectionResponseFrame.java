@@ -1,6 +1,6 @@
 package com.dsp.network.fins.frames;
 
-public class FINSTCPHeaderConnResponseFrame extends FINSFrame {
+public class FINSTCPConnectionResponseFrame extends Frame {
 
   private static final byte[] TEMPLATE = new byte[] {
     (byte) 'F',  (byte) 'I',  (byte) 'N',  (byte) 'S',
@@ -11,7 +11,7 @@ public class FINSTCPHeaderConnResponseFrame extends FINSFrame {
     (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // Server node (0x01 to 0xFE)
   };
   
-  public FINSTCPHeaderConnResponseFrame() {
+  public FINSTCPConnectionResponseFrame() {
     super(TEMPLATE.clone());
   }
   
