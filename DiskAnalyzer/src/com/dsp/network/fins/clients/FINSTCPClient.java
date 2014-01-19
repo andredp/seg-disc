@@ -19,7 +19,6 @@ public class FINSTCPClient extends FINSClient {
   private Client  _client;
   private String  _host;
   private int     _port;
-  private boolean _initialized = false;
   
   // requests
   private FINSTCPHeaderFrame _tcpHeader  = new FINSTCPHeaderFrame();
@@ -42,16 +41,7 @@ public class FINSTCPClient extends FINSClient {
   public FINSTCPClient(String host, int port) throws Exception {
     _host = host;
     _port = port;
-    _client = new TCPClient(_host, _port);
-    //_client = new DebugClient();
-  }
-  
-  /**
-   * Establishes a connection to the PLC (handshake)
-   */
-  @Override
-  public void connect() throws Exception {
-    connect(false);
+    connect();
   }
   
   /**
@@ -60,14 +50,11 @@ public class FINSTCPClient extends FINSClient {
    * @param forceReconnection  when true, forces a full reconnection to the host
    * @throws Exception
    */
-  private void connect(boolean forceReconnection) throws Exception {
-    if (_initialized && !forceReconnection) return;
-    _initialized = true;
-    
-    if (forceReconnection) {
+  private void connect() throws Exception {
+    if (_client != null) {
       _client.close();
-      _client = new TCPClient(_host, _port);
     }
+    _client = new TCPClient(_host, _port);
     
     FINSTCPConnectionFrame connectionFrame = new FINSTCPConnectionFrame();
     connectionFrame.setClientNode((byte) 0x00); // automatic node assignment
@@ -119,7 +106,7 @@ public class FINSTCPClient extends FINSClient {
       try {
         return internalSendCommand(type, area, address, words, data);
       } catch (IOException e) {
-        connect(true);
+        connect();
         tries--;
       }
     }
@@ -153,7 +140,7 @@ public class FINSTCPClient extends FINSClient {
     // RECEIVING RESPONSE
     _client.receive(_tcpHeaderResp.getRawFrame());  // Receive TCP Header
     if (_tcpHeaderResp.hasError()) {
-      Log.error("TCPFinsClient", "FINS/TCP Send Frame error! <code: " + _tcpHeaderResp.getErrorCode());
+      Log.error("TCPFinsClient", "FINS/TCP Send Frame error: " + _tcpHeaderResp.getErrorMessage());
       throw new Exception("Couldn't read data.");
     }
     _client.receive(_finsHeaderResp.getRawFrame()); // Receive FINS Header

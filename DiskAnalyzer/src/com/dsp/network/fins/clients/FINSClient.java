@@ -13,7 +13,6 @@ public abstract class FINSClient {
   private static final int WRITECHUNK     = Configs.getInstance().getInt("PLC_WRITECHUNK");
   private static final int BYTES_PER_WORD = Configs.getInstance().getInt("BYTES_PER_WORD");
   
-  public abstract void connect()    throws Exception;
   public abstract void disconnect() throws Exception;
   
   protected abstract FINSCommandResponseFrame sendCommand(CommandType type, String area, int address, int words)              throws Exception;

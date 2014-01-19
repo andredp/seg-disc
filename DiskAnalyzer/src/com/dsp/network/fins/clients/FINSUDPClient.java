@@ -7,12 +7,6 @@ import com.dsp.network.fins.frames.FINSCommandResponseFrame;
 public class FINSUDPClient extends FINSClient {
 
   @Override
-  public void connect() throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
   public void disconnect() throws Exception {
     // TODO Auto-generated method stub
     

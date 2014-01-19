@@ -29,6 +29,7 @@ public class FINSTCPHeaderResponseFrame extends Frame {
   }
   
   public boolean hasError() {
+    System.out.println("COMMAND: " + _frame[COMM]);
     return _frame[COMM] != (byte) 0x06; // (0x06 is a connection confirmation command)
   }
 

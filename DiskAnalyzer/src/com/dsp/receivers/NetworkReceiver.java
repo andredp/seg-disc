@@ -28,7 +28,6 @@ public class NetworkReceiver implements Receiver {
   public NetworkReceiver() throws Exception {
     try {
       _client = new FINSTCPClient(PLC_IP, PLC_PORT);
-      _client.connect();
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not receive the data.", e);
       throw e;

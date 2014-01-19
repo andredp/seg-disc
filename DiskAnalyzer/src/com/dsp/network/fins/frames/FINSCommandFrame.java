@@ -1,7 +1,6 @@
 package com.dsp.network.fins.frames;
 
 import com.dsp.libs.Utils;
-import com.dsp.network.exceptions.UnknownCommandTypeException;
 import com.dsp.network.exceptions.UnknownMemoryAreaException;
 
 public class FINSCommandFrame extends Frame {
@@ -26,7 +25,7 @@ public class FINSCommandFrame extends Frame {
     throw new UnknownMemoryAreaException(area);
   }
   
-  public void setCommandCode(CommandType type) throws UnknownCommandTypeException {
+  public void setCommandCode(CommandType type) {
     switch (type) {
     case AREA_READ: 
       _frame[COMM_H] = (byte) 0x01; 
@@ -36,7 +35,6 @@ public class FINSCommandFrame extends Frame {
       _frame[COMM_H] = (byte) 0x01; 
       _frame[COMM_L] = (byte) 0x02; 
       return;
-    default: throw new UnknownCommandTypeException(type.toString());
     }
   }
   
@@ -50,8 +48,7 @@ public class FINSCommandFrame extends Frame {
     _frame[WRDS_L] = Utils.decToHexBytes(words, 3);
   }
   
-  public void prepareFrame(CommandType type, String area, int address, int amount) 
-      throws UnknownMemoryAreaException, UnknownCommandTypeException {
+  public void prepareFrame(CommandType type, String area, int address, int amount) throws UnknownMemoryAreaException {
     setMemArea(area);
     setCommandCode(type);
     setMemAddress(address);
@@ -64,7 +61,8 @@ public class FINSCommandFrame extends Frame {
   
   // command type enum
   public enum CommandType {
-    AREA_WRITE, AREA_READ
+    AREA_WRITE, 
+    AREA_READ
   };
 
   // fields indexes

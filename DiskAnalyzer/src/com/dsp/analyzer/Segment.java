@@ -13,11 +13,11 @@ import com.dsp.libs.StdStats;
  */
 public class Segment {
 
-  private static final double NOT_INITIALIZED = -1.0;
+  private static final int NOT_INITIALIZED = -1;
   
-  private int _index         = -1;
-  private int _startPosition = -1;
-  private int _endPosition   = -1;
+  private int _index         = NOT_INITIALIZED;
+  private int _startPosition = NOT_INITIALIZED;
+  private int _endPosition   = NOT_INITIALIZED;
   
   private double _origSalience  = NOT_INITIALIZED;
   private double _origWorkload  = NOT_INITIALIZED;
