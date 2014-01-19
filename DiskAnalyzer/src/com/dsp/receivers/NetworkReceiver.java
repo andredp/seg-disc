@@ -82,10 +82,6 @@ public class NetworkReceiver implements Receiver {
    */
   @Override
   public DiscRawData receive() throws Exception {
-    DummyReceiver comm = new DummyReceiver();
-    Thread.sleep(2000);
-    return comm.receive();
-    /* TODO CORRIGIR
     try {
       int fwords = FRONT_ADDR[1] - FRONT_ADDR[0];
       int bwords = BACK_ADDR[1]  - BACK_ADDR[0];
@@ -96,7 +92,13 @@ public class NetworkReceiver implements Receiver {
     } catch (Exception e) {
       Log.error("NetworkDataReceiver", "Could not receive the data.", e);
       throw e;
-    }*/
+    }
+    
+    /* TO TEST
+    DummyReceiver comm = new DummyReceiver();
+    Thread.sleep(2000);
+    return comm.receive();
+    */
   }
 
   @Override

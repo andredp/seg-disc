@@ -50,7 +50,7 @@ public class FINSTCPHeaderResponseFrame extends Frame {
   // indexes
   private static final int LNGT_H = 6;
   private static final int LNGT_L = 7;
-  private static final int COMM   = 11;
+//private static final int COMM   = 11;
   private static final int ERRC   = 15;
   
 }
